@@ -1,5 +1,5 @@
 [package]
-name = "lune"
+name = "lune-tauri"
 version = "0.8.2"
 edition = "2021"
 license = "MPL-2.0"
@@ -90,6 +90,7 @@ mlua = { version = "0.9.6", features = [
     "luau-jit",
     "async",
     "serialize",
+    "macros"
 ] }
 
 ### SERDE
@@ -149,3 +150,9 @@ rbx_dom_weak = { optional = true, version = "2.6.0" }
 rbx_reflection = { optional = true, version = "4.4.0" }
 rbx_reflection_database = { optional = true, version = "0.2.9" }
 rbx_xml = { optional = true, version = "0.13.2" }
+
+
+### UI
+wry = "0.39.0"
+winit = "0.29.15"
+smol = "2.0.0"

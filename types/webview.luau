@@ -37,16 +37,16 @@ end
 
 	A window containing a webview
 
-	* `exit` () -> void
-	* `open_devtools` () -> void
-	* `close_devtools` () -> void
-	* `load_url` (url: string) -> void
+	* `exit` (self) -> void
+	* `open_devtools` (self) -> void
+	* `close_devtools` (self) -> void
+	* `load_url` (self, url: string) -> void
 ]=]
 export type Window = {
-	exit: () -> (),
-	open_devtools: () -> (),
-	close_devtools: () -> (),
-	load_url: (url: string) -> (),
+	exit: (Window) -> (),
+	open_devtools: (Window) -> (),
+	close_devtools: (Window) -> (),
+	load_url: (Window, url: string) -> (),
 }
 
 return webview

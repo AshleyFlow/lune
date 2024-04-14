@@ -4,14 +4,17 @@ mod logic;
 
 use mlua::prelude::*;
 use mlua_luau_scheduler::LuaSpawnExt;
-use std::{rc::Weak, sync::Arc};
+use std::rc::Weak;
 
-use self::{builder::BuilderConfig, config::WebviewConfig};
+use self::{
+    builder::BuilderConfig,
+    config::{LuaWebview, WebviewConfig},
+};
 use crate::lune::util::TableBuilder;
 
-struct LuaWebview {}
-
 pub const CLOSED_WINDOW_MSG: &str = "^ClosedWindow";
+
+struct LuaWebviewState {}
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     TableBuilder::new(lua)?
@@ -19,7 +22,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .build_readonly()
 }
 
-async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<LuaTable<'lua>> {
+async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<LuaWebview> {
     let lua_strong = {
         lua.app_data_ref::<Weak<Lua>>()
             .expect("Missing weak lua ref")
@@ -48,7 +51,7 @@ async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<L
         ));
     }
 
-    lua.set_app_data(LuaWebview {});
+    lua.set_app_data(LuaWebviewState {});
 
     tokio::spawn(async move {
         builder::start(
@@ -78,43 +81,7 @@ async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<L
         }
     });
 
-    let send_msg = Arc::new(send_msg);
-    let send_msg1 = send_msg.clone();
-    let send_msg2 = send_msg.clone();
-    let send_msg3 = send_msg.clone();
-    let send_msg4 = send_msg.clone();
-
-    TableBuilder::new(lua)?
-        .with_function("exit", move |lua, _: ()| {
-            send_msg1
-                .clone()
-                .send("^CloseWindow".to_owned())
-                .expect("Failed to send message to channel");
-
-            lua.remove_app_data::<LuaWebview>().unwrap();
-
-            Ok(())
-        })?
-        .with_function("open_devtools", move |_lua, _: ()| {
-            send_msg2
-                .clone()
-                .send("^OpenDevtools".to_owned())
-                .expect("Failed to send message to channel");
-            Ok(())
-        })?
-        .with_function("close_devtools", move |_lua, _: ()| {
-            send_msg3
-                .clone()
-                .send("^CloseDevtools".to_owned())
-                .expect("Failed to send message to channel");
-            Ok(())
-        })?
-        .with_function("load_url", move |_lua, url: LuaString| {
-            send_msg4
-                .clone()
-                .send("^LoadUrl:".to_owned() + url.to_string_lossy().to_string().as_str())
-                .expect("Failed to send message to channel");
-            Ok(())
-        })?
-        .build_readonly()
+    Ok(LuaWebview {
+        send_message: send_msg,
+    })
 }

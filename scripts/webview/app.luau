@@ -26,9 +26,9 @@ local app = webview.build({
 	url = string.format("http://localhost:%d/", port),
 })
 
-app:open_devtools()
--- app:close_devtools()
--- app:load_url("https://www.roblox.com/")
+app:openDevtools()
+-- app:closeDevtools()
+-- app:loadUrl("https://www.roblox.com/")
 -- app:exit()
 
 print(string.format("Opened server on port: %d", port))

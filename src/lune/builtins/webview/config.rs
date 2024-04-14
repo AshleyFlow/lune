@@ -16,7 +16,7 @@ impl LuaUserData for LuaWebview {
             Ok(())
         });
 
-        methods.add_method("open_devtools", |_lua, webview, _: ()| {
+        methods.add_method("openDevtools", |_lua, webview, _: ()| {
             if webview.send_message.send("^OpenDevtools".into()).is_err() {
                 return Err(LuaError::RuntimeError(
                     "Failed to send exit message to webview".into(),
@@ -26,7 +26,7 @@ impl LuaUserData for LuaWebview {
             Ok(())
         });
 
-        methods.add_method("close_devtools", |_lua, webview, _: ()| {
+        methods.add_method("closeDevtools", |_lua, webview, _: ()| {
             if webview.send_message.send("^CloseDevtools".into()).is_err() {
                 return Err(LuaError::RuntimeError(
                     "Failed to send exit message to webview".into(),
@@ -36,7 +36,7 @@ impl LuaUserData for LuaWebview {
             Ok(())
         });
 
-        methods.add_method("load_url", |_lua, webview, url: LuaString| {
+        methods.add_method("loadUrl", |_lua, webview, url: LuaString| {
             if webview
                 .send_message
                 .send("^LoadUrl:".to_owned() + url.to_string_lossy().to_string().as_str())
@@ -61,17 +61,11 @@ impl<'lua> FromLua<'lua> for WebviewConfig<'lua> {
     fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
         if let LuaValue::Table(tab) = &value {
             let exit: Option<LuaFunction> = tab.get("exit")?;
-            let url: Option<LuaString> = tab.get("url")?;
-
-            if url.is_none() {
-                return Err(LuaError::RuntimeError(
-                    "Invalid webview config - missing 'url'".to_owned(),
-                ));
-            }
+            let url: LuaString = tab.get("url")?;
 
             Ok(Self {
                 exit,
-                url: url.unwrap(),
+                url,
             })
         } else {
             // Anything else is invalid

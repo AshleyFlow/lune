@@ -38,15 +38,15 @@ end
 	A window containing a webview
 
 	* `exit` (self) -> void
-	* `open_devtools` (self) -> void
-	* `close_devtools` (self) -> void
-	* `load_url` (self, url: string) -> void
+	* `openDevtools` (self) -> void
+	* `closeDevtools` (self) -> void
+	* `loadUrl` (self, url: string) -> void
 ]=]
 export type Window = {
 	exit: (Window) -> (),
-	open_devtools: (Window) -> (),
-	close_devtools: (Window) -> (),
-	load_url: (Window, url: string) -> (),
+	openDevtools: (Window) -> (),
+	closeDevtools: (Window) -> (),
+	loadUrl: (Window, url: string) -> (),
 }
 
 return webview

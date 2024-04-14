@@ -1,4 +1,7 @@
-use tokio::sync::watch::{Receiver, Sender};
+use tokio::{
+    sync::watch::{Receiver, Sender},
+    task,
+};
 
 use winit::{
     event::{Event, WindowEvent},
@@ -51,7 +54,7 @@ impl<'logic> Logic<'logic> {
                     event: WindowEvent::RedrawRequested,
                     ..
                 } => {
-                    if self.rx.has_changed().is_ok() {
+                    if self.rx.has_changed().is_ok() && self.rx.has_changed().unwrap() {
                         let line = self.rx.borrow_and_update();
 
                         match line.as_str() {

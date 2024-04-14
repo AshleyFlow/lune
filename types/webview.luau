@@ -1,7 +1,7 @@
 --[=[
 	@class Webview
 
-	Built-in webview spawner
+	Built-in webview library
 ]=]
 local webview = {}
 
@@ -9,7 +9,7 @@ local webview = {}
     @interface Config
     @within Webview
 
-    Config for building applications
+    Config for building webview applications
 
 	* `exit` () -> void
 	* `url` string (e.g. http://localhost:8080)
@@ -22,7 +22,7 @@ export type Config = {
 --[=[
 	@within Webview
 
-	Spawns a new webview.
+	Spawns a window that contains a webview.
 
 	@param config [W.I.P] configuration
 	@return Window
@@ -37,16 +37,16 @@ end
 
 	A window containing a webview
 
-	* `exit` () -> void
-	* `open_devtools` () -> void
-	* `close_devtools` () -> void
-	* `load_url` (url: string) -> void
+	* `exit` (self) -> void
+	* `openDevtools` (self) -> void
+	* `closeDevtools` (self) -> void
+	* `loadUrl` (self, url: string) -> void
 ]=]
 export type Window = {
-	exit: () -> (),
-	open_devtools: () -> (),
-	close_devtools: () -> (),
-	load_url: (url: string) -> (),
+	exit: (Window) -> (),
+	openDevtools: (Window) -> (),
+	closeDevtools: (Window) -> (),
+	loadUrl: (Window, url: string) -> (),
 }
 
 return webview

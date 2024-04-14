@@ -318,4 +318,27 @@ function net.urlDecode(s: string, binary: boolean?): string
 	return nil :: any
 end
 
+--[=[
+	@within Net
+
+	Finds an avaiable port on the given 'url', will error if none were found.
+
+	### Example usage
+
+	```lua
+	local net = require("@lune/net")
+	local port = net.findAvailablePort("127.0.0.1")
+
+	net.serve(port, function()
+		return "Hello, World!"
+	end)
+	```
+
+	@param ip The ip address to find the port on (default is "127.0.0.1")
+	@return Port number
+]=]
+function net.findAvailablePort(ip: string?): number
+	return nil :: any
+end
+
 return net

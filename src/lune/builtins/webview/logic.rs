@@ -1,11 +1,8 @@
-use tokio::{
-    sync::watch::{Receiver, Sender},
-    task,
-};
+use tokio::sync::watch::{Receiver, Sender};
 
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::EventLoop,
+    event_loop::{EventLoop, EventLoopWindowTarget},
     window::Window,
 };
 use wry::WebView;
@@ -16,7 +13,7 @@ pub struct Logic<'a> {
     window: &'a Window,
     webview: WebView,
     tx: Sender<String>,
-    rx: &'a mut Receiver<String>,
+    rx: Receiver<String>,
 }
 
 impl<'logic> Logic<'logic> {
@@ -24,7 +21,7 @@ impl<'logic> Logic<'logic> {
         window: &'logic Window,
         webview: WebView,
         tx: Sender<String>,
-        rx: &'logic mut Receiver<String>,
+        rx: Receiver<String>,
     ) -> Self {
         Self {
             window,
@@ -34,9 +31,34 @@ impl<'logic> Logic<'logic> {
         }
     }
 
-    pub fn run(self, event_loop: EventLoop<()>) {
+    fn channel_logic(&mut self, elwt: &EventLoopWindowTarget<()>) {
+        if self.rx.has_changed().is_ok() && self.rx.has_changed().unwrap() {
+            let line = self.rx.borrow_and_update();
+
+            match line.as_str() {
+                "^CloseWindow" => {
+                    elwt.exit();
+
+                    if self.tx.send(CLOSED_WINDOW_MSG.to_owned()).is_err() {
+                        println!("Channel listening to window closing is closed");
+                    }
+                }
+                "^OpenDevtools" => self.webview.open_devtools(),
+                "^CloseDevtools" => self.webview.close_devtools(),
+                str => {
+                    if str.starts_with("^LoadUrl:") {
+                        self.webview
+                            .load_url(str.replace("^LoadUrl:", "").as_str())
+                            .expect("Failed to load url");
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn run(mut self, event_loop: EventLoop<()>) {
         event_loop
-            .run(move |event, elwt| match event {
+            .run(|event, elwt| match event {
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
                     ..
@@ -53,30 +75,7 @@ impl<'logic> Logic<'logic> {
                 Event::WindowEvent {
                     event: WindowEvent::RedrawRequested,
                     ..
-                } => {
-                    if self.rx.has_changed().is_ok() && self.rx.has_changed().unwrap() {
-                        let line = self.rx.borrow_and_update();
-
-                        match line.as_str() {
-                            "^CloseWindow" => {
-                                elwt.exit();
-
-                                if self.tx.send(CLOSED_WINDOW_MSG.to_owned()).is_err() {
-                                    println!("Channel listening to window closing is closed");
-                                }
-                            }
-                            "^OpenDevtools" => self.webview.open_devtools(),
-                            "^CloseDevtools" => self.webview.close_devtools(),
-                            str => {
-                                if str.starts_with("^LoadUrl:") {
-                                    self.webview
-                                        .load_url(str.replace("^LoadUrl:", "").as_str())
-                                        .expect("Failed to load url");
-                                }
-                            }
-                        }
-                    }
-                }
+                } => self.channel_logic(elwt),
                 _ => (),
             })
             .unwrap();

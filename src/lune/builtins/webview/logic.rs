@@ -1,7 +1,4 @@
-use tokio::{
-    sync::watch::{Receiver, Sender},
-    task,
-};
+use tokio::sync::watch::{Receiver, Sender};
 
 use winit::{
     event::{Event, WindowEvent},

@@ -2,6 +2,7 @@
 
 use mlua::prelude::*;
 use mlua_luau_scheduler::LuaSpawnExt;
+use std::net::TcpListener;
 
 mod client;
 mod config;
@@ -34,6 +35,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .with_async_function("serve", net_serve)?
         .with_function("urlEncode", net_url_encode)?
         .with_function("urlDecode", net_url_decode)?
+        .with_function("findAvailablePort", net_find_available_port)?
         .build_readonly()
 }
 
@@ -90,4 +92,20 @@ fn net_url_decode<'lua>(
             .map_err(|e| LuaError::RuntimeError(format!("Encountered invalid encoding - {e}")))?
             .into_lua(lua)
     }
+}
+
+fn net_find_available_port(_lua: &Lua, ip: LuaValue) -> LuaResult<LuaNumber> {
+    let ip = ip.as_str().unwrap_or("127.0.0.1");
+    let port = (8000..9000).find(|port| port_is_available(ip, *port));
+
+    match port {
+        Some(port) => Ok(port as f64),
+        None => Err(LuaError::RuntimeError(
+            "Failed to find an available port...".into(),
+        )),
+    }
+}
+
+fn port_is_available(ip: &str, port: u16) -> bool {
+    TcpListener::bind((ip, port)).is_ok()
 }

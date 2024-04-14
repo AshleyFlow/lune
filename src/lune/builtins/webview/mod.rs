@@ -53,14 +53,7 @@ async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<L
 
     lua.set_app_data(LuaWebviewState {});
 
-    tokio::spawn(async move {
-        builder::start(
-            _send_msg,
-            &mut _receive_msg,
-            BuilderConfig { url: url.clone() },
-        )
-        .unwrap();
-    });
+    builder::start(_send_msg, _receive_msg, BuilderConfig { url: url.clone() }).unwrap();
 
     lua.spawn_local(async move {
         let mut receive_msg_outer = receive_msg.clone();

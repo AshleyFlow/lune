@@ -13,7 +13,7 @@ pub struct Logic<'a> {
     window: &'a Window,
     webview: WebView,
     tx: Sender<String>,
-    rx: &'a mut Receiver<String>,
+    rx: Receiver<String>,
 }
 
 impl<'logic> Logic<'logic> {
@@ -21,7 +21,7 @@ impl<'logic> Logic<'logic> {
         window: &'logic Window,
         webview: WebView,
         tx: Sender<String>,
-        rx: &'logic mut Receiver<String>,
+        rx: Receiver<String>,
     ) -> Self {
         Self {
             window,

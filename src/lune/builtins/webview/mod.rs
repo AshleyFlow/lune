@@ -6,7 +6,7 @@ use mlua::prelude::*;
 use mlua_luau_scheduler::LuaSpawnExt;
 use std::{rc::Weak, sync::Arc};
 
-use self::{builder::BuilderConfig, config::TauriConfig};
+use self::{builder::BuilderConfig, config::WebviewConfig};
 use crate::lune::util::TableBuilder;
 
 struct LuaWebview {}
@@ -19,7 +19,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .build_readonly()
 }
 
-async fn build<'lua>(lua: &'lua Lua, config: TauriConfig<'lua>) -> LuaResult<LuaTable<'lua>> {
+async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<LuaTable<'lua>> {
     let lua_strong = {
         lua.app_data_ref::<Weak<Lua>>()
             .expect("Missing weak lua ref")

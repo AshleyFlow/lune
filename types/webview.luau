@@ -40,7 +40,7 @@ end
 	* `exit` (self) -> void
 	* `openDevtools` (self) -> void
 	* `closeDevtools` (self) -> void
-	* `executeJavascript` (self, script: string) -> void
+	* `executeJavascript` (self, script: string, callback: () -> void?) -> void
 	* `loadUrl` (self, url: string) -> void
 	* `onExit` (self, callback: () -> void)) -> void
 ]=]
@@ -49,7 +49,7 @@ export type Window = {
 	exit: (Window) -> (),
 	openDevtools: (Window) -> (),
 	closeDevtools: (Window) -> (),
-	executeJavascript: (Window, script: string) -> (),
+	executeJavascript: (Window, script: string, callback: (unknown: string) -> ()?) -> (),
 	loadUrl: (Window, url: string) -> (),
 	-- callbacks
 	onExit: (Window, callback: () -> ()) -> (),

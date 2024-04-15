@@ -41,15 +41,29 @@ impl<'logic> Logic<'logic> {
                     elwt.exit();
 
                     if self.tx.send(WebviewEvent::ClosedWindow).is_err() {
-                        println!("Channel listening to window closing is closed");
+                        println!("Channel listening to webview is dropped");
                     }
                 }
-                WebviewCommand::OpenDevtools => self.webview.open_devtools(),
-                WebviewCommand::CloseDevtools => self.webview.close_devtools(),
-                WebviewCommand::ExecuteJavascript(script) => self
-                    .webview
-                    .evaluate_script(script.as_str())
-                    .expect("Failed to evaluate javacsript code"),
+                WebviewCommand::OpenDevtools => {
+                    self.webview.open_devtools();
+                }
+                WebviewCommand::CloseDevtools => {
+                    self.webview.close_devtools();
+                }
+                WebviewCommand::ExecuteJavascript(script) => {
+                    let receiver = self.tx.clone();
+
+                    self.webview
+                        .evaluate_script_with_callback(script.as_str(), move |unknown| {
+                            if receiver
+                                .send(WebviewEvent::ExecutedJavascript(unknown))
+                                .is_err()
+                            {
+                                println!("Channel listening to webview is dropped");
+                            }
+                        })
+                        .expect("Failed to evaluate javacsript code");
+                }
                 WebviewCommand::LoadUrl(url) => {
                     self.webview
                         .load_url(url.as_str())
@@ -72,7 +86,7 @@ impl<'logic> Logic<'logic> {
                         elwt.exit();
 
                         if self.tx.send(WebviewEvent::ClosedWindow).is_err() {
-                            println!("Channel listening to window closing is closed");
+                            println!("Channel listening to webview is dropped");
                         }
                     }
                     Event::AboutToWait => {

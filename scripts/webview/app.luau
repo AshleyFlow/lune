@@ -13,13 +13,20 @@ local handle = net.serve(port, function(req)
 	local dir = __dirname .. req.path
 
 	if req.path == "/" then
-		app:executeJavascript([[
-			let element = document.createElement('h1')
+		app:executeJavascript(
+			[[
+				let element = document.createElement('h1')
 			element.innerHTML = 'Hello, World!'
 			document.body.appendChild(element)
 			
 			console.log('Hello, World!')
-		]])
+
+			element.innerHTML
+		]],
+			function(uknown)
+				print(uknown) -- Hello, World!
+			end
+		)
 
 		return {
 			body = fs.isFile(dir) and fs.readFile(dir) or nil,

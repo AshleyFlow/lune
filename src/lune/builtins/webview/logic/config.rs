@@ -11,4 +11,5 @@ pub enum WebviewCommand {
 pub enum WebviewEvent {
     Init,
     ClosedWindow,
+    ExecutedJavascript(String),
 }

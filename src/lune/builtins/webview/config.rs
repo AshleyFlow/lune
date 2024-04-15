@@ -54,21 +54,60 @@ impl LuaUserData for LuaWebview {
             Ok(())
         });
 
-        methods.add_method("executeJavascript", |_lua, webview, script: LuaString| {
-            if webview
-                .send_message
-                .send(WebviewCommand::ExecuteJavascript(
-                    script.to_string_lossy().to_string(),
-                ))
-                .is_err()
-            {
-                return Err(LuaError::RuntimeError(
-                    "Failed to send javascript code to webview".into(),
-                ));
-            };
+        methods.add_method(
+            "executeJavascript",
+            |lua, webview, (script, callback): (LuaString, Option<LuaFunction>)| {
+                if webview
+                    .send_message
+                    .send(WebviewCommand::ExecuteJavascript(
+                        script.to_string_lossy().to_string(),
+                    ))
+                    .is_err()
+                {
+                    return Err(LuaError::RuntimeError(
+                        "Failed to send javascript code to webview".into(),
+                    ));
+                };
 
-            Ok(())
-        });
+                if let Some(callback) = callback {
+                    let lua_strong = {
+                        lua.app_data_ref::<Weak<Lua>>()
+                            .expect("Missing weak lua ref")
+                            .upgrade()
+                            .expect("Lua was dropped unexpectedly")
+                    };
+
+                    let exit_key: LuaRegistryKey = lua.create_registry_value(callback).unwrap();
+                    let mut receive_msg_outer = webview.receive_message.clone();
+
+                    lua.spawn_local(async move {
+                        loop {
+                            let changed = receive_msg_outer.changed();
+
+                            if changed.await.is_ok() {
+                                if let WebviewEvent::ExecutedJavascript(unknown) =
+                                    receive_msg_outer.borrow_and_update().deref()
+                                {
+                                    if let Ok(callback) =
+                                        lua_strong.registry_value::<LuaFunction>(&exit_key)
+                                    {
+                                        let lua_string = unknown.clone().into_lua(&lua_strong);
+
+                                        callback
+                                            .call::<_, LuaValue>(lua_string.unwrap())
+                                            .expect("Failed to call exectureJavascript 'callback'");
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                Ok(())
+            },
+        );
 
         methods.add_method("loadUrl", |_lua, webview, url: LuaString| {
             if webview

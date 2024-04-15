@@ -1,7 +1,5 @@
 pub mod config;
 
-use std::ops::Deref;
-
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::watch::Sender;
 
@@ -38,8 +36,6 @@ impl<'logic> Logic<'logic> {
 
     fn channel_logic(&mut self, elwt: &EventLoopWindowTarget<()>) {
         if let Ok(cmd) = self.rx.try_recv() {
-            println!("{:?}", cmd);
-
             match cmd {
                 WebviewCommand::CloseWindow => {
                     elwt.exit();
@@ -59,7 +55,6 @@ impl<'logic> Logic<'logic> {
                         .load_url(url.as_str())
                         .expect("Failed to load url");
                 }
-                _ => {}
             }
         }
     }

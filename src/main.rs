@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 #![deny(clippy::all)]
 #![warn(clippy::cargo, clippy::pedantic)]
 #![allow(

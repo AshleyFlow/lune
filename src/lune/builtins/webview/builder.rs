@@ -1,6 +1,7 @@
 use std::thread;
 
-use tokio::sync::watch::{Receiver, Sender};
+use tokio::sync::broadcast::Receiver;
+use tokio::sync::watch::Sender;
 use winit::{
     event_loop::{ControlFlow, EventLoopBuilder},
     platform::windows::EventLoopBuilderExtWindows,
@@ -8,15 +9,18 @@ use winit::{
 };
 use wry::WebViewBuilder;
 
-use super::logic;
+use super::logic::{
+    self,
+    config::{WebviewCommand, WebviewEvent},
+};
 
 pub struct BuilderConfig {
-    pub url: String,
+    pub url: Option<String>,
 }
 
 pub fn start(
-    tx: Sender<String>,
-    rx: Receiver<String>,
+    tx: Sender<WebviewEvent>,
+    rx: Receiver<WebviewCommand>,
     config: BuilderConfig,
 ) -> Result<(), String> {
     thread::spawn(move || {
@@ -27,9 +31,14 @@ pub fn start(
 
         let window = WindowBuilder::new().build(&event_loop).unwrap();
         let webview = WebViewBuilder::new(&window)
-            .with_url(config.url)
             .build()
             .expect("Failed to build webview");
+
+        if let Some(url) = config.url {
+            webview
+                .load_url(url.as_str())
+                .expect("Failed to load url into webview");
+        }
 
         let logic = logic::Logic::new(&window, webview, tx, rx);
 

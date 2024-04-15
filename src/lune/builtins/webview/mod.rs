@@ -4,15 +4,14 @@ mod logic;
 
 use mlua::prelude::*;
 use mlua_luau_scheduler::LuaSpawnExt;
-use std::rc::Weak;
+use std::{ops::Deref, rc::Weak};
 
 use self::{
     builder::BuilderConfig,
     config::{LuaWebview, WebviewConfig},
+    logic::config::{WebviewCommand, WebviewEvent},
 };
 use crate::lune::util::TableBuilder;
-
-pub const CLOSED_WINDOW_MSG: &str = "^ClosedWindow";
 
 struct LuaWebviewState {}
 
@@ -30,9 +29,12 @@ async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<L
             .expect("Lua was dropped unexpectedly")
     };
 
-    let url: String = config.url.to_string_lossy().into();
+    let url: Option<String> = config
+        .url
+        .map(|lua_url| lua_url.to_string_lossy().to_string());
+
     let exit_key: Option<LuaRegistryKey> = config
-        .exit
+        .on_exit
         .map(|callback| lua.create_registry_value(callback).unwrap());
 
     /*
@@ -41,8 +43,10 @@ async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<L
     -it indicates that it's going to be used in the second thread
 
     */
-    let (send_msg, mut _receive_msg) = tokio::sync::watch::channel::<String>("".to_owned());
-    let (_send_msg, receive_msg) = tokio::sync::watch::channel::<String>("".to_owned());
+    let (send_msg, mut _receive_msg) = tokio::sync::broadcast::channel::<WebviewCommand>(3);
+    let (_send_msg, mut receive_msg_outer) =
+        tokio::sync::watch::channel::<WebviewEvent>(WebviewEvent::Init);
+    let receive_msg_inner = receive_msg_outer.clone();
 
     if lua.app_data_ref::<LuaWebview>().is_some() {
         return Err(LuaError::RuntimeError(
@@ -53,28 +57,28 @@ async fn build<'lua>(lua: &'lua Lua, config: WebviewConfig<'lua>) -> LuaResult<L
 
     lua.set_app_data(LuaWebviewState {});
 
-    builder::start(_send_msg, _receive_msg, BuilderConfig { url: url.clone() }).unwrap();
+    builder::start(_send_msg, _receive_msg, BuilderConfig { url }).unwrap();
 
     lua.spawn_local(async move {
-        let mut receive_msg_outer = receive_msg.clone();
         loop {
             let changed = receive_msg_outer.changed();
 
-            if changed.await.is_ok()
-                && receive_msg_outer.borrow_and_update().clone() == CLOSED_WINDOW_MSG
-            {
-                if let Some(exit_key) = &exit_key {
-                    if let Ok(callback) = lua_strong.registry_value::<LuaFunction>(exit_key) {
-                        callback.call::<_, ()>(()).expect("Failed to call 'exit'");
+            if changed.await.is_ok() {
+                if let WebviewEvent::ClosedWindow = receive_msg_outer.borrow_and_update().deref() {
+                    if let Some(exit_key) = &exit_key {
+                        if let Ok(callback) = lua_strong.registry_value::<LuaFunction>(exit_key) {
+                            callback.call::<_, ()>(()).expect("Failed to call 'onExit'");
+                        }
                     }
-                }
 
-                break;
+                    break;
+                }
             }
         }
     });
 
     Ok(LuaWebview {
         send_message: send_msg,
+        receive_message: receive_msg_inner,
     })
 }

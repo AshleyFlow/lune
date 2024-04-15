@@ -11,12 +11,12 @@ local webview = {}
 
     Config for building webview applications
 
-	* `exit` () -> void
+	* `onExit` () -> void
 	* `url` string (e.g. http://localhost:8080)
 ]=]
 export type Config = {
-	exit: () -> (),
-	url: string,
+	onExit: () -> ()?,
+	url: string?,
 }
 
 --[=[
@@ -40,13 +40,19 @@ end
 	* `exit` (self) -> void
 	* `openDevtools` (self) -> void
 	* `closeDevtools` (self) -> void
+	* `executeJavascript` (self, script: string) -> void
 	* `loadUrl` (self, url: string) -> void
+	* `onExit` (self, callback: () -> void)) -> void
 ]=]
 export type Window = {
+	-- methods
 	exit: (Window) -> (),
 	openDevtools: (Window) -> (),
 	closeDevtools: (Window) -> (),
+	executeJavascript: (Window, script: string) -> (),
 	loadUrl: (Window, url: string) -> (),
+	-- callbacks
+	onExit: (Window, callback: () -> ()) -> (),
 }
 
 return webview

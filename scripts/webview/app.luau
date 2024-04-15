@@ -7,28 +7,35 @@ local port = net.findAvailablePort("127.0.0.1")
 local debug_dir: string = (debug.info :: any)(1, "sln")
 local __dirname = string.sub(debug_dir, 12, #debug_dir - 2 - 4)
 
-local files = {
-	["/"] = "/index.html",
-}
+local app = webview.build({})
 
 local handle = net.serve(port, function(req)
-	local dir = __dirname .. (files[req.path] or (req.path or "/"))
+	local dir = __dirname .. req.path
 
-	return {
-		body = fs.isFile(dir) and fs.readFile(dir) or nil,
-	}
+	if req.path == "/" then
+		app:executeJavascript([[
+			let element = document.createElement('h1')
+			element.innerHTML = 'Hello, World!'
+			document.body.appendChild(element)
+			
+			console.log('Hello, World!')
+		]])
+
+		return {
+			body = fs.isFile(dir) and fs.readFile(dir) or nil,
+		}
+	end
+
+	return "Hello, World!"
 end)
 
-local app = webview.build({
-	exit = function()
-		handle.stop()
-	end,
-	url = string.format("http://localhost:%d/", port),
-})
+app:onExit(function()
+	handle.stop()
+end)
 
+app:loadUrl(string.format("http://localhost:%d/", port))
 app:openDevtools()
 -- app:closeDevtools()
--- app:loadUrl("https://www.roblox.com/")
 -- app:exit()
 
 print(string.format("Opened server on port: %d", port))

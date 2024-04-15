@@ -155,4 +155,3 @@ rbx_xml = { optional = true, version = "0.13.2" }
 ### UI
 wry = "0.39.0"
 winit = "0.29.15"
-smol = "2.0.0"

@@ -42,7 +42,11 @@ pub struct LuaWindow {
     window: Window,
 }
 
-async fn process_events(_lua: &Lua, this: &mut LuaWindow, _: ()) -> LuaResult<LuaWindowEvent> {
+async fn lua_window_process_events(
+    _lua: &Lua,
+    this: &mut LuaWindow,
+    _: (),
+) -> LuaResult<LuaWindowEvent> {
     let (send, receive) = channel::<LuaWindowEvent>();
     let event_loop = &mut this.event_loop;
 
@@ -70,24 +74,25 @@ async fn process_events(_lua: &Lua, this: &mut LuaWindow, _: ()) -> LuaResult<Lu
     Ok(event.unwrap_or(LuaWindowEvent::Nothing))
 }
 
+fn lua_window_run_script(_lua: &Lua, this: &LuaWindow, script: LuaValue) -> LuaResult<()> {
+    if let Some(script) = script.as_str() {
+        if this.webview.evaluate_script(script).is_err() {
+            return Err(LuaError::RuntimeError("Failed to evaluate script".into()));
+        }
+    } else {
+        return Err(LuaError::FromLuaConversionError {
+            from: script.type_name(),
+            to: "string",
+            message: None,
+        });
+    }
+
+    Ok(())
+}
+
 impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_async_method_mut("process_events", process_events);
-
-        methods.add_method("run_script", |_lua, this, script: LuaValue| {
-            if let Some(script) = script.as_str() {
-                if this.webview.evaluate_script(script).is_err() {
-                    return Err(LuaError::RuntimeError("Failed to evaluate script".into()));
-                }
-            } else {
-                return Err(LuaError::FromLuaConversionError {
-                    from: script.type_name(),
-                    to: "string",
-                    message: None,
-                });
-            }
-
-            Ok(())
-        });
+        methods.add_async_method_mut("process_events", lua_window_process_events);
+        methods.add_method("run_script", lua_window_run_script);
     }
 }

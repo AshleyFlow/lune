@@ -10,7 +10,7 @@ mod process;
 mod serde;
 mod stdio;
 mod task;
-mod webview;
+mod window;
 
 #[cfg(feature = "roblox")]
 mod roblox;
@@ -25,7 +25,7 @@ pub enum LuneBuiltin {
     Process,
     Serde,
     Stdio,
-    Webview,
+    Window,
     #[cfg(feature = "roblox")]
     Roblox,
 }
@@ -41,7 +41,7 @@ impl LuneBuiltin {
             Self::Process => "process",
             Self::Serde => "serde",
             Self::Stdio => "stdio",
-            Self::Webview => "webview",
+            Self::Window => "window",
             #[cfg(feature = "roblox")]
             Self::Roblox => "roblox",
         }
@@ -57,7 +57,7 @@ impl LuneBuiltin {
             Self::Process => process::create(lua),
             Self::Serde => serde::create(lua),
             Self::Stdio => stdio::create(lua),
-            Self::Webview => webview::create(lua),
+            Self::Window => window::create(lua),
             #[cfg(feature = "roblox")]
             Self::Roblox => roblox::create(lua),
         };
@@ -83,7 +83,7 @@ impl FromStr for LuneBuiltin {
             "process" => Ok(Self::Process),
             "serde" => Ok(Self::Serde),
             "stdio" => Ok(Self::Stdio),
-            "webview" => Ok(Self::Webview),
+            "window" => Ok(Self::Window),
             #[cfg(feature = "roblox")]
             "roblox" => Ok(Self::Roblox),
             _ => Err(format!("Unknown builtin library '{s}'")),

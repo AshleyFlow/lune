@@ -27,14 +27,16 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .build_readonly()
 }
 
-pub struct LuaWindow {
-    event_loop: EventLoop<()>,
-    webview: WebView,
-    window: Window,
+pub struct LuaWindow {}
+
+pub struct LuaWindowState {
+    pub webview: WebView,
+    pub window: Window,
 }
 
 impl LuaWindow {
-    pub fn new(_lua: &Lua, config: LuaTable) -> LuaResult<LuaWindow> {
+    pub fn new(lua: &Lua, config: LuaTable) -> LuaResult<LuaWindow> {
+        let init_script: Result<String, LuaError> = config.get("init_script");
         let title: String = config.get("title").unwrap_or("Lune".into());
         let html: Result<String, LuaError> = config.get("html");
         let url: Result<String, LuaError> = config.get("url");
@@ -46,6 +48,12 @@ impl LuaWindow {
             .unwrap();
 
         let mut webview = WebViewBuilder::new(&window);
+
+        webview = if let Ok(init_script) = init_script {
+            webview.with_initialization_script(init_script.as_str())
+        } else {
+            webview
+        };
 
         webview = if let Ok(url) = url {
             webview.with_url(url)
@@ -59,21 +67,23 @@ impl LuaWindow {
             webview
         };
 
-        Ok(LuaWindow {
-            event_loop,
+        lua.set_app_data(event_loop);
+        lua.set_app_data(LuaWindowState {
             webview: webview.build().unwrap(),
             window,
-        })
+        });
+
+        Ok(LuaWindow {})
     }
 }
 
 async fn lua_window_process_events(
-    _lua: &Lua,
-    this: &mut LuaWindow,
+    lua: &Lua,
+    _this: &mut LuaWindow,
     _: (),
 ) -> LuaResult<LuaWindowEvent> {
     let (send, receive) = channel::<LuaWindowEvent>();
-    let event_loop = &mut this.event_loop;
+    let mut event_loop = lua.app_data_mut::<EventLoop<()>>().unwrap();
 
     event_loop.pump_events(Some(Duration::ZERO), |event, _elwt| match event {
         Event::WindowEvent {
@@ -83,7 +93,11 @@ async fn lua_window_process_events(
             send.send(LuaWindowEvent::Exit).unwrap();
         }
 
-        Event::AboutToWait => this.window.request_redraw(),
+        Event::AboutToWait => lua
+            .app_data_mut::<LuaWindowState>()
+            .unwrap()
+            .window
+            .request_redraw(),
         Event::WindowEvent {
             event: WindowEvent::RedrawRequested,
             ..
@@ -101,13 +115,15 @@ async fn lua_window_process_events(
 
 async fn lua_window_run_script<'lua>(
     lua: &Lua,
-    this: &LuaWindow,
+    _this: &LuaWindow,
     (script, callback): (LuaValue<'lua>, Option<LuaFunction<'lua>>),
 ) -> LuaResult<()> {
     if let Some(script) = script.as_str() {
         let (send, mut receive) = tokio::sync::watch::channel("null".to_string());
 
-        let result = this
+        let result = lua
+            .app_data_mut::<LuaWindowState>()
+            .unwrap()
             .webview
             .evaluate_script_with_callback(script, move |unknown| {
                 if send.receiver_count() == 0 {
@@ -161,8 +177,11 @@ async fn lua_window_run_script<'lua>(
     }
 }
 
-fn lua_window_set_visible(_lua: &Lua, this: &LuaWindow, visible: bool) -> LuaResult<()> {
-    this.window.set_visible(visible);
+fn lua_window_set_visible(lua: &Lua, _this: &LuaWindow, visible: bool) -> LuaResult<()> {
+    lua.app_data_mut::<LuaWindowState>()
+        .unwrap()
+        .window
+        .set_visible(visible);
 
     Ok(())
 }

@@ -18,11 +18,21 @@ impl<'lua> FromLua<'lua> for LuaWindowEvent {
         let userdata = value.as_userdata();
 
         if let Some(userdata) = userdata {
-            return Ok(*userdata.borrow::<Self>().unwrap());
+            if let Ok(this) = userdata.borrow::<Self>() {
+                return Ok(*this);
+            } else {
+                return Err(LuaError::FromLuaConversionError {
+                    from: value.type_name(),
+                    to: "LuaWindowEvent",
+                    message: None,
+                });
+            }
         }
 
-        Err(LuaError::RuntimeError(
-            "Provided value is not a LuaWindowEvent".into(),
-        ))
+        Err(LuaError::FromLuaConversionError {
+            from: value.type_name(),
+            to: "userdata",
+            message: None,
+        })
     }
 }

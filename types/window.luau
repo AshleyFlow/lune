@@ -8,6 +8,7 @@ local webview = {}
 export type Window = {
 	process_events: (self: Window) -> typeof(webview.events),
 	run_script: (self: Window, script: string) -> (),
+	set_visible: (self: Window, visible: boolean) -> (),
 }
 
 export type WindowConfig = {

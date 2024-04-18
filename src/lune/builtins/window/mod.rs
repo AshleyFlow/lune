@@ -114,9 +114,16 @@ fn lua_window_run_script(_lua: &Lua, this: &LuaWindow, script: LuaValue) -> LuaR
     Ok(())
 }
 
+fn lua_window_set_visible(_lua: &Lua, this: &LuaWindow, visible: bool) -> LuaResult<()> {
+    this.window.set_visible(visible);
+
+    Ok(())
+}
+
 impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_async_method_mut("process_events", lua_window_process_events);
         methods.add_method("run_script", lua_window_run_script);
+        methods.add_method("set_visible", lua_window_set_visible);
     }
 }

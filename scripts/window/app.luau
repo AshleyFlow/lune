@@ -1,28 +1,57 @@
+--!strict
 local task = require("@lune/task")
 local window = require("@lune/window")
-
 local my_window = window.new({
-	title = "My window",
+	init_script = "let ELEMENTS = []; console.log('STARTED')",
 })
 
-my_window:run_script("console.log('Hello, World!')")
+local counter = 0
+my_window.run_script("let ELEMENTS = []; console.log('STARTED')")
 
-my_window:run_script("'50' + 150", function(unknown)
-	print("'50' + 150 =", unknown)
-end)
+local CREATE_ELEMENT = function(tag: string, innerHTML: string?)
+	local text = `var element = document.createElement('{tag}')\n`
 
-task.spawn(function()
-	while true do
-		local event = my_window:process_events()
-
-		if event == window.events.Exit then
-			my_window:set_visible(false)
-			break
-		end
+	if innerHTML then
+		text ..= `element.innerHTML = '{innerHTML}'\n`
 	end
+
+	text ..= `document.body.appendChild(element)\n`
+
+	return text
+end
+
+local function createElement(tag: string, innerHTML: string?)
+	local id = counter
+
+	my_window.run_script(CREATE_ELEMENT(tag, innerHTML) .. "ELEMENTS.push(element)")
+
+	counter += 1
+
+	return {
+		style = (setmetatable({}, {
+			__newindex = function(_, i, v)
+				my_window.run_script(`ELEMENTS[{id}].style.{i} = "{v}"`, function()
+					print("style")
+				end)
+			end,
+		}) :: any) :: {
+			[string]: string,
+		},
+	}
+end
+
+task.delay(1, function()
+	local header = createElement("h1", "Hello, World!")
+	createElement("h2", "um...")
+	createElement("h3", "um..")
+	header.style.color = "red"
 end)
 
-for i = 10, 0, -1 do
-	task.wait(1)
-	print(i)
+while true do
+	local event = my_window.process_events()
+
+	if event == window.events.Exit then
+		my_window.set_visible(false)
+		break
+	end
 end

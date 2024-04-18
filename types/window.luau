@@ -30,25 +30,27 @@ local webview = {}
 	@interface Window
 	@within Webview
 
-	* `process_events` (self) -> WindowEvent
-	* `run_script` (self, script: string, callback: (string) -> void?) -> void
-	* `set_visible` (self, visible: boolean) -> void
+	* `process_events` () -> WindowEvent
+	* `run_script` (script: string, callback: (string) -> void?) -> void
+	* `set_visible` (visible: boolean) -> void
 ]=]
 export type Window = {
-	process_events: (self: Window) -> WindowEvent,
-	run_script: (self: Window, script: string, callback: (string) -> ()?) -> (),
-	set_visible: (self: Window, visible: boolean) -> (),
+	process_events: () -> WindowEvent,
+	run_script: (script: string, callback: (string) -> ()?) -> (),
+	set_visible: (visible: boolean) -> (),
 }
 
 --[=[
 	@interface WindowConfig
 	@within Webview
 
+	* `reload_script` string
 	* `title` string
 	* `html` string
 	* `url` string
 ]=]
 export type WindowConfig = {
+	reload_script: string?,
 	title: string?,
 	html: string?,
 	url: string?,

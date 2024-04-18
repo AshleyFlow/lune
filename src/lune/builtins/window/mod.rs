@@ -36,7 +36,7 @@ pub struct LuaWindowState {
 
 impl LuaWindow {
     pub fn new(lua: &Lua, config: LuaTable) -> LuaResult<LuaWindow> {
-        let init_script: Result<String, LuaError> = config.get("init_script");
+        let reload_script: Result<String, LuaError> = config.get("reload_script");
         let title: String = config.get("title").unwrap_or("Lune".into());
         let html: Result<String, LuaError> = config.get("html");
         let url: Result<String, LuaError> = config.get("url");
@@ -49,8 +49,8 @@ impl LuaWindow {
 
         let mut webview = WebViewBuilder::new(&window);
 
-        webview = if let Ok(init_script) = init_script {
-            webview.with_initialization_script(init_script.as_str())
+        webview = if let Ok(reload_script) = reload_script {
+            webview.with_initialization_script(reload_script.as_str())
         } else {
             webview
         };
@@ -77,11 +77,7 @@ impl LuaWindow {
     }
 }
 
-async fn lua_window_process_events(
-    lua: &Lua,
-    _this: &mut LuaWindow,
-    _: (),
-) -> LuaResult<LuaWindowEvent> {
+async fn lua_window_process_events(lua: &Lua, _: ()) -> LuaResult<LuaWindowEvent> {
     let (send, receive) = channel::<LuaWindowEvent>();
     let mut event_loop = lua.app_data_mut::<EventLoop<()>>().unwrap();
 
@@ -115,7 +111,6 @@ async fn lua_window_process_events(
 
 async fn lua_window_run_script<'lua>(
     lua: &Lua,
-    _this: &LuaWindow,
     (script, callback): (LuaValue<'lua>, Option<LuaFunction<'lua>>),
 ) -> LuaResult<()> {
     if let Some(script) = script.as_str() {
@@ -177,7 +172,7 @@ async fn lua_window_run_script<'lua>(
     }
 }
 
-fn lua_window_set_visible(lua: &Lua, _this: &LuaWindow, visible: bool) -> LuaResult<()> {
+fn lua_window_set_visible(lua: &Lua, visible: bool) -> LuaResult<()> {
     lua.app_data_mut::<LuaWindowState>()
         .unwrap()
         .window
@@ -188,8 +183,8 @@ fn lua_window_set_visible(lua: &Lua, _this: &LuaWindow, visible: bool) -> LuaRes
 
 impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_async_method_mut("process_events", lua_window_process_events);
-        methods.add_async_method("run_script", lua_window_run_script);
-        methods.add_method("set_visible", lua_window_set_visible);
+        methods.add_async_function("process_events", lua_window_process_events);
+        methods.add_async_function("run_script", lua_window_run_script);
+        methods.add_function("set_visible", lua_window_set_visible);
     }
 }

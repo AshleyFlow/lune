@@ -10,13 +10,19 @@ export type Window = {
 	run_script: (self: Window, script: string) -> (),
 }
 
+export type WindowConfig = {
+	title: string?,
+	html: string?,
+	url: string?,
+}
+
 webview.events = {
 	Nothing = nil :: unknown,
 	Redraw = nil :: unknown,
 	Exit = nil :: unknown,
 }
 
-webview.new = function(): Window
+webview.new = function(config: WindowConfig): Window
 	return nil :: any
 end
 

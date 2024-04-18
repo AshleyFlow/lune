@@ -22,17 +22,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
 
     TableBuilder::new(lua)?
         .with_value("events", events)?
-        .with_function("new", |_, _: ()| {
-            let event_loop = EventLoop::new().unwrap();
-            let window = WindowBuilder::new().build(&event_loop).unwrap();
-            let webview = WebViewBuilder::new(&window).build().unwrap();
-
-            Ok(LuaWindow {
-                event_loop,
-                webview,
-                window,
-            })
-        })?
+        .with_function("new", LuaWindow::new)?
         .build_readonly()
 }
 
@@ -40,6 +30,40 @@ pub struct LuaWindow {
     event_loop: EventLoop<()>,
     webview: WebView,
     window: Window,
+}
+
+impl LuaWindow {
+    pub fn new(_lua: &Lua, config: LuaTable) -> LuaResult<LuaWindow> {
+        let title: String = config.get("title").unwrap_or("Lune".into());
+        let html: Result<String, LuaError> = config.get("html");
+        let url: Result<String, LuaError> = config.get("url");
+
+        let event_loop = EventLoop::new().unwrap();
+        let window = WindowBuilder::new()
+            .with_title(title)
+            .build(&event_loop)
+            .unwrap();
+
+        let mut webview = WebViewBuilder::new(&window);
+
+        webview = if let Ok(url) = url {
+            webview.with_url(url)
+        } else {
+            webview
+        };
+
+        webview = if let Ok(html) = html {
+            webview.with_html(html)
+        } else {
+            webview
+        };
+
+        Ok(LuaWindow {
+            event_loop,
+            webview: webview.build().unwrap(),
+            window,
+        })
+    }
 }
 
 async fn lua_window_process_events(

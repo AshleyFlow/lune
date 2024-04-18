@@ -1,6 +1,8 @@
 local window = require("@lune/window")
 
-local my_window = window.new()
+local my_window = window.new({
+	title = "My window",
+})
 
 my_window:run_script("console.log('Hello, World!')")
 

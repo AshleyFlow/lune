@@ -7,6 +7,10 @@ local my_window = window.new({
 
 my_window:run_script("console.log('Hello, World!')")
 
+my_window:run_script("'50' + 150", function(unknown)
+	print("'50' + 150 =", unknown)
+end)
+
 task.spawn(function()
 	while true do
 		local event = my_window:process_events()

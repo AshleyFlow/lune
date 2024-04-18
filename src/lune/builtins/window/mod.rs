@@ -3,7 +3,8 @@ mod enums;
 use crate::lune::util::TableBuilder;
 use enums::LuaWindowEvent;
 use mlua::prelude::*;
-use std::{sync::mpsc::channel, time::Duration};
+use mlua_luau_scheduler::LuaSpawnExt;
+use std::{rc::Weak, sync::mpsc::channel, time::Duration};
 use tokio::time;
 use winit::{
     event::{Event, WindowEvent},
@@ -98,20 +99,66 @@ async fn lua_window_process_events(
     Ok(event.unwrap_or(LuaWindowEvent::Nothing))
 }
 
-fn lua_window_run_script(_lua: &Lua, this: &LuaWindow, script: LuaValue) -> LuaResult<()> {
+async fn lua_window_run_script<'lua>(
+    lua: &Lua,
+    this: &LuaWindow,
+    (script, callback): (LuaValue<'lua>, Option<LuaFunction<'lua>>),
+) -> LuaResult<()> {
     if let Some(script) = script.as_str() {
-        if this.webview.evaluate_script(script).is_err() {
+        let (send, mut receive) = tokio::sync::watch::channel("null".to_string());
+
+        let result = this
+            .webview
+            .evaluate_script_with_callback(script, move |unknown| {
+                if send.receiver_count() == 0 {
+                    return;
+                }
+
+                if let Err(error) = send.send(unknown) {
+                    println!("{}", error);
+                };
+            });
+
+        if result.is_err() {
             return Err(LuaError::RuntimeError("Failed to evaluate script".into()));
         }
+
+        if let Some(callback) = callback {
+            let inner_lua = lua
+                .app_data_ref::<Weak<Lua>>()
+                .expect("Missing weak lua ref")
+                .upgrade()
+                .expect("Lua was dropped unexpectedly");
+            let key = lua.create_registry_value(callback)?;
+
+            lua.spawn_local(async move {
+                let mut receive_inner = receive.clone();
+                loop {
+                    let changed = receive_inner.changed().await;
+
+                    if changed.is_ok() {
+                        let inner_handler = inner_lua.registry_value::<LuaFunction>(&key).unwrap();
+                        let unknown = receive.borrow_and_update();
+
+                        inner_handler
+                            .call_async::<_, LuaValue>(unknown.clone().into_lua(&inner_lua))
+                            .await
+                            .unwrap();
+
+                        break;
+                    }
+                }
+            })
+        }
+
+        Ok(())
     } else {
-        return Err(LuaError::FromLuaConversionError {
+        Err(LuaError::FromLuaConversionError {
             from: script.type_name(),
             to: "string",
             message: None,
-        });
+        })
     }
-
-    Ok(())
 }
 
 fn lua_window_set_visible(_lua: &Lua, this: &LuaWindow, visible: bool) -> LuaResult<()> {
@@ -123,7 +170,7 @@ fn lua_window_set_visible(_lua: &Lua, this: &LuaWindow, visible: bool) -> LuaRes
 impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_async_method_mut("process_events", lua_window_process_events);
-        methods.add_method("run_script", lua_window_run_script);
+        methods.add_async_method("run_script", lua_window_run_script);
         methods.add_method("set_visible", lua_window_set_visible);
     }
 }

@@ -30,12 +30,17 @@ local webview = {}
 	@interface Window
 	@within Webview
 
-	* `process_events` () -> WindowEvent
+	* `process_events` (callback: (WindowEvent) -> boolean) -> void
 	* `run_script` (script: string, callback: (string) -> void?) -> void
 	* `set_visible` (visible: boolean) -> void
 ]=]
 export type Window = {
-	process_events: () -> WindowEvent,
+	--[=[
+		Will run your callback in a loop
+		
+		Return true in the callback to break the loop
+	]=]
+	process_events: (callback: (WindowEvent) -> boolean) -> (),
 	run_script: (script: string, callback: (string) -> ()?) -> (),
 	set_visible: (visible: boolean) -> (),
 }

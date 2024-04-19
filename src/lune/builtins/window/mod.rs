@@ -3,9 +3,8 @@ mod enums;
 use crate::lune::util::TableBuilder;
 use enums::LuaWindowEvent;
 use mlua::prelude::*;
-use mlua_luau_scheduler::LuaSpawnExt;
-use std::{rc::Weak, sync::mpsc::channel, time::Duration};
-use tokio::time;
+use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
+use std::{rc::Weak, time::Duration};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
@@ -77,36 +76,56 @@ impl LuaWindow {
     }
 }
 
-async fn lua_window_process_events(lua: &Lua, _: ()) -> LuaResult<LuaWindowEvent> {
-    let (send, receive) = channel::<LuaWindowEvent>();
-    let mut event_loop = lua.app_data_mut::<EventLoop<()>>().unwrap();
+fn lua_window_process_events<'lua>(lua: &'lua Lua, callback: LuaFunction<'lua>) -> LuaResult<()> {
+    let func = lua.create_async_function(|lua: &Lua, callback: LuaFunction| async move {
+        let mut event_loop = lua.app_data_mut::<EventLoop<()>>().unwrap();
+        // let (send, mut receive) = channel::<LuaWindowEvent>(LuaWindowEvent::Nothing);
 
-    event_loop.pump_events(Some(Duration::ZERO), |event, _elwt| match event {
-        Event::WindowEvent {
-            event: WindowEvent::CloseRequested,
-            ..
-        } => {
-            send.send(LuaWindowEvent::Exit).unwrap();
+        loop {
+            let mut lua_window_event: Option<LuaWindowEvent> = None;
+            event_loop.pump_events(Some(Duration::ZERO), |event, elwt| match event {
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => {
+                    lua_window_event = Some(LuaWindowEvent::Exit);
+                    callback.call::<_, ()>(LuaWindowEvent::Exit).unwrap();
+                    elwt.exit();
+                }
+
+                Event::AboutToWait => {}
+                Event::WindowEvent {
+                    event: WindowEvent::RedrawRequested,
+                    ..
+                } => {
+                    lua_window_event = Some(LuaWindowEvent::Redraw);
+
+                    lua.app_data_mut::<LuaWindowState>()
+                        .unwrap()
+                        .window
+                        .request_redraw();
+                }
+                _ => (),
+            });
+
+            let lua_value = callback
+                .call::<_, LuaValue>(lua_window_event.unwrap_or(LuaWindowEvent::Nothing))
+                .unwrap();
+
+            if lua_value.is_boolean() && lua_value.as_boolean().unwrap() {
+                break;
+            }
+
+            tokio::time::sleep(Duration::from_millis(16)).await;
         }
 
-        Event::AboutToWait => lua
-            .app_data_mut::<LuaWindowState>()
-            .unwrap()
-            .window
-            .request_redraw(),
-        Event::WindowEvent {
-            event: WindowEvent::RedrawRequested,
-            ..
-        } => {
-            send.send(LuaWindowEvent::Redraw).unwrap();
-        }
-        _ => (),
-    });
+        Ok(())
+    })?;
 
-    time::sleep(Duration::ZERO).await;
+    let thread = lua.create_thread(func)?;
+    lua.push_thread_back(&thread, callback)?;
 
-    let event = receive.try_recv();
-    Ok(event.unwrap_or(LuaWindowEvent::Nothing))
+    Ok(())
 }
 
 async fn lua_window_run_script<'lua>(
@@ -183,7 +202,7 @@ fn lua_window_set_visible(lua: &Lua, visible: bool) -> LuaResult<()> {
 
 impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_async_function("process_events", lua_window_process_events);
+        methods.add_function("process_events", lua_window_process_events);
         methods.add_async_function("run_script", lua_window_run_script);
         methods.add_function("set_visible", lua_window_set_visible);
     }

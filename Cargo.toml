@@ -1,16 +1,16 @@
 [package]
-name = "lune"
-version = "0.8.3"
+name = "lune-webview"
+version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
-repository = "https://github.com/lune-org/lune"
-description = "A standalone Luau runtime"
+repository = "https://github.com/HighFlowey/lune-webview"
+description = "A standalone Luau runtime for making web applications"
 readme = "README.md"
-keywords = ["cli", "lua", "luau", "runtime"]
+keywords = ["cli", "lua", "luau", "runtime", "web", "application"]
 categories = ["command-line-interface"]
 
 [[bin]]
-name = "lune"
+name = "luneweb"
 path = "src/main.rs"
 
 [lib]

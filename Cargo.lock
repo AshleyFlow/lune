@@ -2114,8 +2114,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "lune"
-version = "0.8.3"
+name = "lune-webview"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-compression",

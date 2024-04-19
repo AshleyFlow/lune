@@ -47,11 +47,11 @@ task.delay(1, function()
 	header.style.color = "red"
 end)
 
-while true do
-	local event = my_window.process_events()
-
+my_window.process_events(function(event)
 	if event == window.events.Exit then
 		my_window.set_visible(false)
-		break
+		return true
 	end
-end
+
+	return false
+end)

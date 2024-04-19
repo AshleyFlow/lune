@@ -76,7 +76,7 @@ jobs:
         if: matrix.cargo-target == 'aarch64-unknown-linux-gnu'
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y musl-tools clang llvm
+          sudo apt-get install -y musl-tools clang llvm libgtk-3-dev
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Build binary

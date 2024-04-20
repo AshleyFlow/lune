@@ -17,7 +17,7 @@
 
 A standalone [Luau](https://luau-lang.org) runtime.
 
-This fork will add libraries for creating web applications to [Lune](https://github.com/lune-org/lune).
+This fork adds builtin libraries for creating web applications to [Lune](https://github.com/lune-org/lune).
 
 ## Where do I start?
 

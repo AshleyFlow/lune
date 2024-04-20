@@ -15,6 +15,8 @@ pub(crate) mod standalone;
 
 use cli::Cli;
 use console::style;
+
+#[cfg(windows)]
 use winapi::um::{
     wincon::{FreeConsole, GetConsoleWindow},
     winuser::{ShowWindow, SW_HIDE},

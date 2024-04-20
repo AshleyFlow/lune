@@ -21,6 +21,9 @@ pub struct BuildCommand {
     /// input file path with an executable extension
     #[clap(short, long)]
     pub output: Option<PathBuf>,
+
+    #[clap(long)]
+    pub no_console: bool,
 }
 
 impl BuildCommand {
@@ -42,7 +45,12 @@ impl BuildCommand {
             "Creating standalone binary using {}",
             style(input_path_displayed).green()
         );
-        let patched_bin = Metadata::create_env_patched_bin(source_code.clone())
+
+        if self.no_console {
+            println!("This standalone binary will not open console");
+        }
+
+        let patched_bin = Metadata::create_env_patched_bin(source_code.clone(), self.no_console)
             .await
             .context("failed to create patched binary")?;
 
@@ -51,6 +59,7 @@ impl BuildCommand {
             "Writing standalone binary to {}",
             style(output_path_displayed).blue()
         );
+
         write_executable_file_to(output_path, patched_bin).await?;
 
         Ok(ExitCode::SUCCESS)

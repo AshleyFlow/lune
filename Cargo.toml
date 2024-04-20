@@ -1,6 +1,6 @@
 [package]
 name = "lune-webview"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MPL-2.0"
 repository = "https://github.com/HighFlowey/lune-webview"
@@ -152,3 +152,6 @@ rbx_xml = { optional = true, version = "0.13.2" }
 ### UI
 wry = { version = "0.39.0", features = ["devtools"] }
 winit = "0.29.15"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.9", features = ["wincon", "winuser"] }

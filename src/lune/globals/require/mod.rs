@@ -80,7 +80,7 @@ async fn require<'lua>(
         .expect("Failed to get RequireContext from app data");
 
     if let Some(builtin_name) = path
-        .strip_prefix("@lune/")
+        .strip_prefix("@luneweb/")
         .map(|name| name.to_ascii_lowercase())
     {
         builtin::require(lua, &context, &builtin_name).await

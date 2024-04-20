@@ -1,4 +1,4 @@
-local regex = require("@lune/regex")
+local regex = require("@luneweb/regex")
 local my_regex = regex.new("local\\s+(\\w+)\\s*=\\s*(\\d+)")
 
 local captures = my_regex.match("local var = 5000")

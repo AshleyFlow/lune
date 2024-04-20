@@ -50,7 +50,7 @@ impl SetupCommand {
             \n\
             \n\"{SETTING_NAME_MODE}\": \"relativeToFile\",\
             \n\"{SETTING_NAME_ALIASES}\": {{\
-            \n    \"@lune/\": \"~/.lune/.typedefs/{version_string}/\"\
+            \n    \"@luneweb/\": \"~/.luneweb/.typedefs/{version_string}/\"\
             \n}}",
         );
 
@@ -122,8 +122,8 @@ fn add_values_to_vscode_settings_json(value: JsonValue) -> JsonValue {
         let mode_val = "relativeToFile".to_string();
         settings.insert(SETTING_NAME_MODE.to_string(), JsonValue::String(mode_val));
         // Set require alias to our typedefs
-        let aliases_key = "@lune/".to_string();
-        let aliases_val = format!("~/.lune/.typedefs/{}/", lune_version());
+        let aliases_key = "@luneweb/".to_string();
+        let aliases_val = format!("~/.luneweb/.typedefs/{}/", lune_version());
         if let Some(JsonValue::Object(aliases)) = settings.get_mut(SETTING_NAME_ALIASES) {
             if aliases.contains_key(&aliases_key) {
                 if aliases.get(&aliases_key).unwrap() != &JsonValue::String(aliases_val.to_string())
@@ -171,7 +171,7 @@ async fn write_typedef_files(typedef_files: HashMap<String, Vec<u8>>) -> Result<
     let cache_dir = UserDirs::new()
         .context("Failed to find user home directory")?
         .home_dir()
-        .join(".lune")
+        .join(".luneweb")
         .join(".typedefs")
         .join(version_string);
     dirs_to_write.push(cache_dir.clone());

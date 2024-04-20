@@ -8,6 +8,7 @@ pub struct LuaRegex {
 impl LuaRegex {
     pub fn new(pattern: String) -> LuaRegex {
         return Self {
+            // If this panics, it's likely caused by a bug
             regex: Regex::new(pattern.as_str()).unwrap(),
         };
     }
@@ -24,7 +25,6 @@ fn lua_regex_match<'lua>(
     this: &LuaRegex,
     string: LuaString,
 ) -> LuaResult<LuaTable<'lua>> {
-    // If this panics, it's likely caused by a bug
     let captures = this
         .regex
         .captures_iter(string.to_str().expect("Failed to turn LuaString into str."));

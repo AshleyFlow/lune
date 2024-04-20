@@ -1,5 +1,5 @@
 --!strict
-local window = require("@lune/window")
+local window = require("@luneweb/window")
 
 --[=[
 	reload_script in WindowConfig only runs when the page reloads

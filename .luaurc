@@ -9,7 +9,8 @@
     "warn"
   ],
   "aliases": {
-    "lune": "./types/",
+    "luneweb": "./types",
+    "lune": "./types",
     "tests": "./tests",
     "require-tests": "./tests/require/tests"
   }

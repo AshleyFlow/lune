@@ -24,3 +24,5 @@ This fork adds builtin libraries for creating web applications to [Lune](https:/
 Head over to the [Installation](https://lune-org.github.io/docs/getting-started/1-installation) page to learn a bit about how to use Lune!
 
 Once you feel confident enough, you can check out the example script in the scripts directory.
+
+Also, don't forget to use `luneweb` and not `lune`, when you want to use the CLI.

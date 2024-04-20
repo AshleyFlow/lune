@@ -35,27 +35,22 @@ jobs:
         include:
           - name: Windows x86_64
             runner-os: windows-latest
-            artifact-name: lune-${{ needs.init.outputs.version }}-windows-x86_64
+            artifact-name: luneweb-${{ needs.init.outputs.version }}-windows-x86_64
             cargo-target: x86_64-pc-windows-msvc
 
           - name: Linux x86_64
             runner-os: ubuntu-latest
-            artifact-name: lune-${{ needs.init.outputs.version }}-linux-x86_64
+            artifact-name: luneweb-${{ needs.init.outputs.version }}-linux-x86_64
             cargo-target: x86_64-unknown-linux-gnu
-
-          - name: Linux aarch64
-            runner-os: ubuntu-latest
-            artifact-name: lune-${{ needs.init.outputs.version }}-linux-aarch64
-            cargo-target: aarch64-unknown-linux-gnu
 
           - name: macOS x86_64
             runner-os: macos-latest
-            artifact-name: lune-${{ needs.init.outputs.version }}-macos-x86_64
+            artifact-name: luneweb-${{ needs.init.outputs.version }}-macos-x86_64
             cargo-target: x86_64-apple-darwin
 
           - name: macOS aarch64
             runner-os: macos-latest
-            artifact-name: lune-${{ needs.init.outputs.version }}-macos-aarch64
+            artifact-name: luneweb-${{ needs.init.outputs.version }}-macos-aarch64
             cargo-target: aarch64-apple-darwin
 
     name: Build - ${{ matrix.name }}
@@ -72,14 +67,13 @@ jobs:
       - name: Install Just
         uses: extractions/setup-just@v1
 
-      - name: Install build tooling (aarch64-unknown-linux-gnu)
-        if: matrix.cargo-target == 'aarch64-unknown-linux-gnu'
+      - name: Install build tooling (x86_64-unknown-linux-gnu)
+        if: matrix.cargo-target == 'x86_64-unknown-linux-gnu'
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y musl-tools clang llvm libgtk-3-dev
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          echo "PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/usr/aarch64-linux-gnu/lib/pkgconfig:/usr/aarch64-linux-gnu/share/pkgconfig" >> $GITHUB_ENV
+          sudo apt-get install -y libwebkit2gtk-4.1-dev
+          echo "PKG_CONFIG_SYSROOT_DIR=/usr/x86_64-linux-gnu" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/x86_64-linux-gnu/lib/pkgconfig:/usr/x86_64-linux-gnu/share/pkgconfig" >> $GITHUB_ENV
 
       - name: Build binary
         run: just build --locked --release --target ${{ matrix.cargo-target }}

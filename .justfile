@@ -1,6 +1,6 @@
 EXT := if os() == "windows" { ".exe" } else { "" }
 CWD := invocation_directory()
-BIN_NAME := "lune"
+BIN_NAME := "luneweb"
 
 # Default hidden recipe for listing other recipes + cwd
 [no-cd]

@@ -3,6 +3,7 @@
     "luau-lsp.types.roblox": false,
     "luau-lsp.require.mode": "relativeToFile",
     "luau-lsp.require.directoryAliases": {
+        "@luneweb/": "./types/",
         "@lune/": "./types/",
         "@tests/": "./tests/",
         "@require-tests/": "./tests/require/tests/"

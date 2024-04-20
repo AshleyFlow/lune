@@ -7,6 +7,7 @@ mod fs;
 mod luau;
 mod net;
 mod process;
+mod regex;
 mod serde;
 mod stdio;
 mod task;
@@ -26,6 +27,7 @@ pub enum LuneBuiltin {
     Serde,
     Stdio,
     Window,
+    Regex,
     #[cfg(feature = "roblox")]
     Roblox,
 }
@@ -42,6 +44,7 @@ impl LuneBuiltin {
             Self::Serde => "serde",
             Self::Stdio => "stdio",
             Self::Window => "window",
+            Self::Regex => "regex",
             #[cfg(feature = "roblox")]
             Self::Roblox => "roblox",
         }
@@ -58,6 +61,7 @@ impl LuneBuiltin {
             Self::Serde => serde::create(lua),
             Self::Stdio => stdio::create(lua),
             Self::Window => window::create(lua),
+            Self::Regex => regex::create(lua),
             #[cfg(feature = "roblox")]
             Self::Roblox => roblox::create(lua),
         };
@@ -84,6 +88,7 @@ impl FromStr for LuneBuiltin {
             "serde" => Ok(Self::Serde),
             "stdio" => Ok(Self::Stdio),
             "window" => Ok(Self::Window),
+            "regex" => Ok(Self::Regex),
             #[cfg(feature = "roblox")]
             "roblox" => Ok(Self::Roblox),
             _ => Err(format!("Unknown builtin library '{s}'")),

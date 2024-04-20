@@ -132,10 +132,7 @@ env_logger = { optional = true, version = "0.11" }
 itertools = "0.12"
 clap = { optional = true, version = "4.1", features = ["derive"] }
 include_dir = { optional = true, version = "0.7", features = ["glob"] }
-regex = { optional = true, version = "1.7", default-features = false, features = [
-    "std",
-    "unicode-perl",
-] }
+regex = { optional = true, version = "1.7", default-features = false, features = ["std", "unicode-perl"] }
 rustyline = { optional = true, version = "14.0" }
 
 ### ROBLOX

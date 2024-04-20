@@ -2,7 +2,15 @@ use mlua::prelude::*;
 use regex::Regex;
 
 pub struct LuaRegex {
-    pub pattern: String,
+    regex: Regex,
+}
+
+impl LuaRegex {
+    pub fn new(pattern: String) -> LuaRegex {
+        return Self {
+            regex: Regex::new(pattern.as_str()).unwrap(),
+        };
+    }
 }
 
 impl LuaUserData for LuaRegex {
@@ -17,9 +25,9 @@ fn lua_regex_match<'lua>(
     string: LuaString,
 ) -> LuaResult<LuaTable<'lua>> {
     // If this panics, it's likely caused by a bug
-    let regex = Regex::new(this.pattern.as_str()).unwrap();
-    let captures =
-        regex.captures_iter(string.to_str().expect("Failed to turn LuaString into str."));
+    let captures = this
+        .regex
+        .captures_iter(string.to_str().expect("Failed to turn LuaString into str."));
     let t = lua.create_table()?;
 
     for capture in captures {
@@ -35,27 +43,3 @@ fn lua_regex_match<'lua>(
 
     Ok(t)
 }
-
-// impl<'lua> FromLua<'lua> for LuaRegex {
-//     fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
-//         let userdata = value.as_userdata();
-
-//         if let Some(userdata) = userdata {
-//             if let Ok(this) = userdata.borrow::<Self>() {
-//                 return Ok(this.clone());
-//             } else {
-//                 return Err(LuaError::FromLuaConversionError {
-//                     from: value.type_name(),
-//                     to: "LuaRegex",
-//                     message: None,
-//                 });
-//             }
-//         }
-
-//         Err(LuaError::FromLuaConversionError {
-//             from: value.type_name(),
-//             to: "userdata",
-//             message: None,
-//         })
-//     }
-// }

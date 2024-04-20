@@ -16,9 +16,7 @@ return freeze({
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     TableBuilder::new(lua)?
         .with_function("new", |lua, pattern: LuaString| {
-            let lib = LuaRegex {
-                pattern: pattern.to_string_lossy().to_string(),
-            };
+            let lib = LuaRegex::new(pattern.to_string_lossy().to_string());
 
             let table_freeze = lua
                 .globals()

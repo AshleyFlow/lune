@@ -12,10 +12,10 @@ use self::metadata::Metadata;
     Returns whether or not the currently executing Lune binary
     is a standalone binary, and if so, the bytes of the binary.
 */
-pub async fn check() -> Option<Vec<u8>> {
-    let (is_standalone, patched_bin) = Metadata::check_env().await;
+pub async fn check() -> Option<(Vec<u8>, bool)> {
+    let (is_standalone, patched_bin, no_console) = Metadata::check_env().await;
     if is_standalone {
-        Some(patched_bin)
+        Some((patched_bin, no_console))
     } else {
         None
     }

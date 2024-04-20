@@ -6,6 +6,7 @@ use once_cell::sync::Lazy;
 use tokio::fs;
 
 const MAGIC: &[u8; 8] = b"cr3sc3nt";
+const MAGIC_NOCONSOLE: &[u8; 8] = b"cr5sc5nt";
 
 static CURRENT_EXE: Lazy<PathBuf> =
     Lazy::new(|| env::current_exe().expect("failed to get current exe"));
@@ -38,18 +39,23 @@ impl Metadata {
         Returns whether or not the currently executing Lune binary
         is a standalone binary, and if so, the bytes of the binary.
     */
-    pub async fn check_env() -> (bool, Vec<u8>) {
+    pub async fn check_env() -> (bool, Vec<u8>, bool) {
         let contents = fs::read(CURRENT_EXE.to_path_buf())
             .await
             .unwrap_or_default();
-        let is_standalone = contents.ends_with(MAGIC);
-        (is_standalone, contents)
+
+        let no_console = contents.ends_with(MAGIC_NOCONSOLE);
+        let is_standalone = contents.ends_with(MAGIC) || no_console;
+        (is_standalone, contents, no_console)
     }
 
     /**
         Creates a patched standalone binary from the given script contents.
     */
-    pub async fn create_env_patched_bin(script_contents: impl Into<Vec<u8>>) -> Result<Vec<u8>> {
+    pub async fn create_env_patched_bin(
+        script_contents: impl Into<Vec<u8>>,
+        no_console: bool,
+    ) -> Result<Vec<u8>> {
         let mut patched_bin = fs::read(CURRENT_EXE.to_path_buf()).await?;
 
         // Compile luau input into bytecode
@@ -61,7 +67,13 @@ impl Metadata {
 
         // Append the bytecode / metadata to the end
         let meta = Self { bytecode };
-        patched_bin.extend_from_slice(&meta.to_bytes());
+        patched_bin.extend_from_slice(&meta.to_bytes({
+            if no_console {
+                *MAGIC_NOCONSOLE
+            } else {
+                *MAGIC
+            }
+        }));
 
         Ok(patched_bin)
     }
@@ -71,12 +83,22 @@ impl Metadata {
     */
     pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
         let bytes = bytes.as_ref();
-        if bytes.len() < 16 || !bytes.ends_with(MAGIC) {
+        let magic: Option<&[u8; 8]> = {
+            if bytes.ends_with(MAGIC) {
+                Some(MAGIC)
+            } else if bytes.ends_with(MAGIC_NOCONSOLE) {
+                Some(MAGIC_NOCONSOLE)
+            } else {
+                None
+            }
+        };
+
+        if bytes.len() < 16 || magic.is_none() {
             bail!("not a standalone binary")
         }
 
         // Extract bytecode size
-        let bytecode_size_bytes = &bytes[bytes.len() - 16..bytes.len() - 8];
+        let bytecode_size_bytes = &bytes[bytes.len() - 16..bytes.len() - magic.unwrap().len()];
         let bytecode_size =
             usize::try_from(u64::from_be_bytes(bytecode_size_bytes.try_into().unwrap()))?;
 
@@ -89,11 +111,11 @@ impl Metadata {
     /**
         Writes the metadata chunk to a byte vector, to later bet read using `from_bytes`.
     */
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self, magic: [u8; 8]) -> Vec<u8> {
         let mut bytes = Vec::new();
         bytes.extend_from_slice(&self.bytecode);
         bytes.extend_from_slice(&(self.bytecode.len() as u64).to_be_bytes());
-        bytes.extend_from_slice(MAGIC);
+        bytes.extend_from_slice(&magic);
         bytes
     }
 }

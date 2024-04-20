@@ -15,6 +15,10 @@ pub(crate) mod standalone;
 
 use cli::Cli;
 use console::style;
+use winapi::um::{
+    wincon::{FreeConsole, GetConsoleWindow},
+    winuser::{ShowWindow, SW_HIDE},
+};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> ExitCode {
@@ -26,7 +30,20 @@ async fn main() -> ExitCode {
         .with_level(true)
         .init();
 
-    if let Some(bin) = standalone::check().await {
+    if let Some((bin, no_console)) = standalone::check().await {
+        if no_console {
+            #[cfg(windows)]
+            {
+                let window = unsafe { GetConsoleWindow() };
+                if !window.is_null() {
+                    unsafe {
+                        ShowWindow(window, SW_HIDE);
+                        FreeConsole();
+                    }
+                }
+            }
+        }
+
         return standalone::run(bin).await.unwrap();
     }
 

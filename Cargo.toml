@@ -24,7 +24,6 @@ cli = [
     "dep:env_logger",
     "dep:clap",
     "dep:include_dir",
-    "dep:regex",
     "dep:rustyline",
 ]
 roblox = [
@@ -73,8 +72,10 @@ dunce = "1.0"
 lz4_flex = "0.11"
 path-clean = "1.0"
 pathdiff = "0.2"
+bstr = "1.9.1"
 pin-project = "1.0"
 urlencoding = "2.1"
+regex = "1.10.4"
 
 ### RUNTIME
 
@@ -132,7 +133,6 @@ env_logger = { optional = true, version = "0.11" }
 itertools = "0.12"
 clap = { optional = true, version = "4.1", features = ["derive"] }
 include_dir = { optional = true, version = "0.7", features = ["glob"] }
-regex = { optional = true, version = "1.7", default-features = false, features = ["std", "unicode-perl"] }
 rustyline = { optional = true, version = "14.0" }
 
 ### ROBLOX
@@ -152,6 +152,7 @@ rbx_xml = { optional = true, version = "0.13.2" }
 ### UI
 wry = { version = "0.39.0", features = ["devtools"] }
 winit = "0.29.15"
+zip_next = "1.1.1"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.9", features = ["wincon", "winuser"] }

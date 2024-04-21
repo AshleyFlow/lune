@@ -24,10 +24,10 @@ pub enum LuneBuiltin {
     Net,
     Task,
     Process,
+    Regex,
     Serde,
     Stdio,
     Window,
-    Regex,
     #[cfg(feature = "roblox")]
     Roblox,
 }
@@ -41,10 +41,10 @@ impl LuneBuiltin {
             Self::Net => "net",
             Self::Task => "task",
             Self::Process => "process",
+            Self::Regex => "regex",
             Self::Serde => "serde",
             Self::Stdio => "stdio",
             Self::Window => "window",
-            Self::Regex => "regex",
             #[cfg(feature = "roblox")]
             Self::Roblox => "roblox",
         }
@@ -58,10 +58,10 @@ impl LuneBuiltin {
             Self::Net => net::create(lua),
             Self::Task => task::create(lua),
             Self::Process => process::create(lua),
+            Self::Regex => regex::create(lua),
             Self::Serde => serde::create(lua),
             Self::Stdio => stdio::create(lua),
             Self::Window => window::create(lua),
-            Self::Regex => regex::create(lua),
             #[cfg(feature = "roblox")]
             Self::Roblox => roblox::create(lua),
         };
@@ -85,10 +85,10 @@ impl FromStr for LuneBuiltin {
             "net" => Ok(Self::Net),
             "task" => Ok(Self::Task),
             "process" => Ok(Self::Process),
+            "regex" => Ok(Self::Regex),
             "serde" => Ok(Self::Serde),
             "stdio" => Ok(Self::Stdio),
             "window" => Ok(Self::Window),
-            "regex" => Ok(Self::Regex),
             #[cfg(feature = "roblox")]
             "roblox" => Ok(Self::Roblox),
             _ => Err(format!("Unknown builtin library '{s}'")),

@@ -40,36 +40,44 @@ impl LuaWindow {
         let html: Result<String, LuaError> = config.get("html");
         let url: Result<String, LuaError> = config.get("url");
 
-        let event_loop = EventLoop::new().unwrap();
-        let window = WindowBuilder::new()
-            .with_title(title)
-            .build(&event_loop)
-            .unwrap();
+        let inner_lua = lua
+            .app_data_ref::<Weak<Lua>>()
+            .expect("Missing weak lua ref")
+            .upgrade()
+            .expect("Lua was dropped unexpectedly");
 
-        let mut webview = WebViewBuilder::new(&window);
+        lua.spawn_local(async move {
+            let event_loop = EventLoop::new().unwrap();
+            let window = WindowBuilder::new()
+                .with_title(title)
+                .build(&event_loop)
+                .unwrap();
 
-        webview = if let Ok(reload_script) = reload_script {
-            webview.with_initialization_script(reload_script.as_str())
-        } else {
-            webview
-        };
+            let mut webview = WebViewBuilder::new(&window);
 
-        webview = if let Ok(url) = url {
-            webview.with_url(url)
-        } else {
-            webview
-        };
+            webview = if let Ok(reload_script) = reload_script {
+                webview.with_initialization_script(reload_script.as_str())
+            } else {
+                webview
+            };
 
-        webview = if let Ok(html) = html {
-            webview.with_html(html)
-        } else {
-            webview
-        };
+            webview = if let Ok(url) = url {
+                webview.with_url(url)
+            } else {
+                webview
+            };
 
-        lua.set_app_data(event_loop);
-        lua.set_app_data(LuaWindowState {
-            webview: webview.build().unwrap(),
-            window,
+            webview = if let Ok(html) = html {
+                webview.with_html(html)
+            } else {
+                webview
+            };
+
+            inner_lua.set_app_data(event_loop);
+            inner_lua.set_app_data(LuaWindowState {
+                webview: webview.build().unwrap(),
+                window,
+            });
         });
 
         Ok(LuaWindow {})

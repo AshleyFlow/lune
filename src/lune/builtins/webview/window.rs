@@ -1,15 +1,11 @@
-use std::{rc::Weak, time::Duration};
+use std::rc::Weak;
 
 use mlua::prelude::*;
 use mlua_luau_scheduler::LuaSpawnExt;
-use winit::{
-    event::{Event, WindowEvent},
-    platform::pump_events::EventLoopExtPumpEvents,
-    window::{WindowBuilder, WindowId},
-};
+use winit::window::{WindowBuilder, WindowId};
 use wry::WebViewBuilder;
 
-use super::{enums::LuaWindowEvent, EVENT_LOOP, WEBVIEWS, WINDOWS};
+use super::{EVENT_LOOP, WEBVIEWS, WINDOWS};
 
 pub struct LuaWindow {
     pub window_id: WindowId,
@@ -59,47 +55,6 @@ impl LuaWindow {
             Ok(LuaWindow { window_id: id })
         })
     }
-}
-
-async fn lua_window_process_events<'lua>(
-    _lua: &'lua Lua,
-    this: &LuaWindow,
-    callback: LuaFunction<'lua>,
-) -> LuaResult<()> {
-    loop {
-        let mut lua_window_event: Option<LuaWindowEvent> = None;
-        EVENT_LOOP.with(|event_loop| {
-            event_loop
-                .borrow_mut()
-                .pump_events(Some(Duration::ZERO), |event, elwt| match event {
-                    Event::WindowEvent {
-                        event: WindowEvent::CloseRequested,
-                        window_id,
-                        ..
-                    } => {
-                        if window_id == this.window_id {
-                            lua_window_event = Some(LuaWindowEvent::Exit);
-                            callback.call::<_, ()>(LuaWindowEvent::Exit).unwrap();
-                            elwt.exit();
-                        }
-                    }
-                    Event::AboutToWait => {}
-                    _ => (),
-                });
-        });
-
-        tokio::time::sleep(Duration::from_millis(16)).await;
-
-        let lua_value = callback
-            .call::<_, LuaValue>(lua_window_event.unwrap_or(LuaWindowEvent::Nothing))
-            .unwrap();
-
-        if lua_value.is_boolean() && lua_value.as_boolean().unwrap() {
-            break;
-        }
-    }
-
-    Ok(())
 }
 
 async fn lua_window_run_script<'lua>(
@@ -183,7 +138,6 @@ fn lua_window_set_visible(_lua: &Lua, this: &LuaWindow, visible: bool) -> LuaRes
 
 impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_async_method("process_events", lua_window_process_events);
         methods.add_async_method("run_script", lua_window_run_script);
         methods.add_method("set_visible", lua_window_set_visible);
     }

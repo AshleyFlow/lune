@@ -16,7 +16,8 @@ local my_window = webview.new({
 })
 
 my_window:run_script(init_script)
-my_window:process_events(function(event)
+
+webview.event_loop(function(window_id, event)
 	if event == webview.events.Exit then
 		my_window:set_visible(false)
 

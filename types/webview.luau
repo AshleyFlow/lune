@@ -23,6 +23,8 @@ export type WindowEvent = "Enum.WindowEvent"
 		end
 	end
 	```
+
+	* `event_loop` ( callback: ( WindowId, WindowEvent ) ) -> ()
 ]=]
 local webview = {}
 
@@ -30,17 +32,10 @@ local webview = {}
 	@interface Window
 	@within Webview
 
-	* `process_events` (self, callback: (WindowEvent) -> boolean) -> void
 	* `run_script` (self, script: string, callback: (string) -> void?) -> void
 	* `set_visible` (self, visible: boolean) -> void
 ]=]
 export type Window = {
-	--[=[
-		Will run your callback in a loop
-		
-		Return true in the callback to break the loop
-	]=]
-	process_events: (self: Window, callback: (WindowEvent) -> boolean) -> (),
 	run_script: (self: Window, script: string, callback: (string) -> ()?) -> (),
 	set_visible: (self: Window, visible: boolean) -> (),
 }
@@ -70,6 +65,13 @@ webview.events = {
 	Nothing = (nil :: any) :: WindowEvent,
 	Exit = (nil :: any) :: WindowEvent,
 }
+
+--[=[
+	@within Webview
+]=]
+webview.event_loop = function(callback: (window_id: unknown, event: WindowEvent) -> boolean): Window
+	return nil :: any
+end
 
 webview.new = function(config: WindowConfig): Window
 	return nil :: any

@@ -3,7 +3,6 @@ use mlua::prelude::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LuaWindowEvent {
     Nothing,
-    Redraw,
     Exit,
 }
 

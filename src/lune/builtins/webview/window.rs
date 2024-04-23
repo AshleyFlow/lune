@@ -6,21 +6,18 @@ use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
     platform::pump_events::EventLoopExtPumpEvents,
-    window::{Window, WindowBuilder},
+    window::{WindowBuilder, WindowId},
 };
-use wry::{WebView, WebViewBuilder};
+use wry::WebViewBuilder;
 
-use super::enums::LuaWindowEvent;
+use super::{enums::LuaWindowEvent, WEBVIEWS, WINDOWS};
 
-pub struct LuaWindow {}
-
-pub struct LuaWindowState {
-    pub webview: WebView,
-    pub window: Window,
+pub struct LuaWindow {
+    window_id: WindowId,
 }
 
 impl LuaWindow {
-    pub fn new(lua: &Lua, config: LuaTable) -> LuaResult<LuaWindow> {
+    pub fn new(_lua: &Lua, config: LuaTable) -> LuaResult<LuaWindow> {
         let reload_script: Result<String, LuaError> = config.get("reload_script");
         let title: String = config.get("title").unwrap_or("Lune".into());
         let html: Result<String, LuaError> = config.get("html");
@@ -52,13 +49,11 @@ impl LuaWindow {
             webview
         };
 
-        lua.set_app_data(event_loop);
-        lua.set_app_data(LuaWindowState {
-            webview: webview.build().unwrap(),
-            window,
-        });
+        let id = window.id();
+        WEBVIEWS.with_borrow_mut(|map| map.insert(id.clone(), webview.build().unwrap()));
+        WINDOWS.with_borrow_mut(|map| map.insert(id.clone(), window));
 
-        Ok(LuaWindow {})
+        Ok(LuaWindow { window_id: id })
     }
 }
 

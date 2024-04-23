@@ -68,7 +68,6 @@ export type WindowConfig = {
 ]=]
 webview.events = {
 	Nothing = (nil :: any) :: WindowEvent,
-	Redraw = (nil :: any) :: WindowEvent,
 	Exit = (nil :: any) :: WindowEvent,
 }
 

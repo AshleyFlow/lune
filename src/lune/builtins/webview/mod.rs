@@ -22,7 +22,6 @@ thread_local! {
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     let events = TableBuilder::new(lua)?
         .with_value("Nothing", LuaWindowEvent::Nothing)?
-        .with_value("Redraw", LuaWindowEvent::Redraw)?
         .with_value("Exit", LuaWindowEvent::Exit)?
         .build_readonly()?;
 

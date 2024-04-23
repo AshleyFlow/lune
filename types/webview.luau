@@ -24,9 +24,15 @@ export type WindowEvent = "Enum.WindowEvent"
 	end
 	```
 
-	* `event_loop` ( callback: ( WindowId, WindowEvent ) ) -> ()
+	* `event_loop` ( callback: ( WindowId, WindowEvent ) -> void ) -> void
 ]=]
 local webview = {}
+
+--[=[
+	@interface WindowId
+	@within Webview
+]=]
+export type WindowId = {}
 
 --[=[
 	@interface Window
@@ -38,6 +44,7 @@ local webview = {}
 export type Window = {
 	run_script: (self: Window, script: string, callback: (string) -> ()?) -> (),
 	set_visible: (self: Window, visible: boolean) -> (),
+	id: WindowId,
 }
 
 --[=[
@@ -69,7 +76,9 @@ webview.events = {
 --[=[
 	@within Webview
 ]=]
-webview.event_loop = function(callback: (window_id: unknown, event: WindowEvent) -> boolean): Window
+webview.event_loop = function(
+	callback: (window_id: WindowId, event: WindowEvent) -> boolean
+): Window
 	return nil :: any
 end
 

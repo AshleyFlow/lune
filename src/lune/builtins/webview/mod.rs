@@ -4,6 +4,7 @@ mod window;
 use crate::lune::util::TableBuilder;
 use enums::LuaWindowEvent;
 use mlua::prelude::*;
+use mlua_luau_scheduler::{IntoLuaThread, LuaSchedulerExt};
 use std::{cell::RefCell, collections::HashMap, time::Duration};
 use winit::{
     event::{Event, WindowEvent},
@@ -67,36 +68,44 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .build_readonly()
 }
 
-async fn window_event_loop<'lua>(_lua: &'lua Lua, callback: LuaFunction<'lua>) -> LuaResult<()> {
-    loop {
-        let mut callback_args: (Option<LuaWindowId>, LuaWindowEvent) =
-            (None, LuaWindowEvent::Nothing);
-        EVENT_LOOP.with(|event_loop| {
-            event_loop
-                .borrow_mut()
-                .pump_events(Some(Duration::ZERO), |event, elwt| match event {
-                    Event::WindowEvent {
-                        event: WindowEvent::CloseRequested,
-                        window_id,
-                        ..
-                    } => {
-                        let lua_window_id = LuaWindowId(window_id);
-                        callback_args = (Some(lua_window_id), LuaWindowEvent::Exit);
-                        elwt.exit();
-                    }
-                    Event::AboutToWait => {}
-                    _ => (),
-                });
-        });
+async fn window_event_loop<'lua>(lua: &'lua Lua, callback: LuaFunction<'lua>) -> LuaResult<()> {
+    let function = lua.create_async_function(|_lua, callback: LuaFunction<'lua>| async move {
+        loop {
+            let mut callback_args: (Option<LuaWindowId>, LuaWindowEvent) =
+                (None, LuaWindowEvent::Nothing);
+            EVENT_LOOP.with(|event_loop| {
+                event_loop.borrow_mut().pump_events(
+                    Some(Duration::ZERO),
+                    |event, elwt| match event {
+                        Event::WindowEvent {
+                            event: WindowEvent::CloseRequested,
+                            window_id,
+                            ..
+                        } => {
+                            let lua_window_id = LuaWindowId(window_id);
+                            callback_args = (Some(lua_window_id), LuaWindowEvent::Exit);
+                            elwt.exit();
+                        }
+                        Event::AboutToWait => {}
+                        _ => (),
+                    },
+                );
+            });
 
-        tokio::time::sleep(Duration::from_millis(16)).await;
+            tokio::time::sleep(Duration::ZERO).await;
 
-        let lua_value = callback.call::<_, LuaValue>(callback_args).unwrap();
+            let lua_value = callback.call::<_, LuaValue>(callback_args).unwrap();
 
-        if lua_value.is_boolean() && lua_value.as_boolean().unwrap() {
-            break;
+            if lua_value.is_boolean() && lua_value.as_boolean().unwrap() {
+                break;
+            }
         }
-    }
+
+        Ok(())
+    })?;
+
+    let thread = function.into_lua_thread(lua)?;
+    lua.push_thread_back(thread, callback)?;
 
     Ok(())
 }

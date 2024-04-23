@@ -16,6 +16,8 @@ use self::window::LuaWindow;
 thread_local! {
     pub static WEBVIEWS: RefCell<HashMap<WindowId, WebView>> = RefCell::new(HashMap::new());
     pub static WINDOWS: RefCell<HashMap<WindowId, Window>> = RefCell::new(HashMap::new());
+
+    // will panic if this gets accessed in another thread
     pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
 }
 

@@ -4,14 +4,18 @@ use crate::lune::util::TableBuilder;
 use enums::LuaWindowEvent;
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
-use std::{rc::Weak, time::Duration};
+use std::{cell::RefCell, collections::HashMap, rc::Weak, time::Duration};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
     platform::pump_events::EventLoopExtPumpEvents,
-    window::{Window, WindowBuilder},
+    window::{Window, WindowBuilder, WindowId},
 };
 use wry::{WebView, WebViewBuilder};
+
+thread_local! {
+    static WEBVIEWS: RefCell<HashMap<WindowId, WebView>> = RefCell::new(HashMap::new());
+}
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     let events = TableBuilder::new(lua)?

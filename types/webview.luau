@@ -1,14 +1,14 @@
 export type WindowEvent = "Enum.WindowEvent"
 
 --[=[
-	@class Window
+	@class Webview
 
 	Built-in library for creating applications
 
 	### Example usage
 
 	```lua
-	local window = require("@lune/window")
+	local webview = require("@lune/webview")
 	local my_window = window.new({
 		title = "Hello, World!",
 	})
@@ -30,9 +30,9 @@ local webview = {}
 	@interface Window
 	@within Webview
 
-	* `process_events` (callback: (WindowEvent) -> boolean) -> void
-	* `run_script` (script: string, callback: (string) -> void?) -> void
-	* `set_visible` (visible: boolean) -> void
+	* `process_events` (self, callback: (WindowEvent) -> boolean) -> void
+	* `run_script` (self, script: string, callback: (string) -> void?) -> void
+	* `set_visible` (self, visible: boolean) -> void
 ]=]
 export type Window = {
 	--[=[
@@ -40,9 +40,9 @@ export type Window = {
 		
 		Return true in the callback to break the loop
 	]=]
-	process_events: (callback: (WindowEvent) -> boolean) -> (),
-	run_script: (script: string, callback: (string) -> ()?) -> (),
-	set_visible: (visible: boolean) -> (),
+	process_events: (self: Window, callback: (WindowEvent) -> boolean) -> (),
+	run_script: (self: Window, script: string, callback: (string) -> ()?) -> (),
+	set_visible: (self: Window, visible: boolean) -> (),
 }
 
 --[=[

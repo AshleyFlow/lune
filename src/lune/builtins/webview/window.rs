@@ -4,7 +4,6 @@ use mlua::prelude::*;
 use mlua_luau_scheduler::LuaSpawnExt;
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::EventLoop,
     platform::pump_events::EventLoopExtPumpEvents,
     window::{WindowBuilder, WindowId},
 };
@@ -23,40 +22,42 @@ impl LuaWindow {
         let html: Result<String, LuaError> = config.get("html");
         let url: Result<String, LuaError> = config.get("url");
 
-        let event_loop = EventLoop::new().unwrap();
-        let window = WindowBuilder::new()
-            .with_title(title)
-            .build(&event_loop)
-            .unwrap();
+        EVENT_LOOP.with(|event_loop| {
+            let event_loop = event_loop.borrow_mut();
+            let window = WindowBuilder::new()
+                .with_title(title)
+                .build(&event_loop)
+                .unwrap();
 
-        let mut webview = WebViewBuilder::new(&window);
+            let mut webview = WebViewBuilder::new(&window);
 
-        webview = if let Ok(reload_script) = reload_script {
-            webview.with_initialization_script(reload_script.as_str())
-        } else {
-            webview
-        };
+            webview = if let Ok(reload_script) = reload_script {
+                webview.with_initialization_script(reload_script.as_str())
+            } else {
+                webview
+            };
 
-        webview = if let Ok(url) = url {
-            webview.with_url(url)
-        } else {
-            webview
-        };
+            webview = if let Ok(url) = url {
+                webview.with_url(url)
+            } else {
+                webview
+            };
 
-        webview = if let Ok(html) = html {
-            webview.with_html(html)
-        } else {
-            webview
-        };
+            webview = if let Ok(html) = html {
+                webview.with_html(html)
+            } else {
+                webview
+            };
 
-        let id = window.id();
-        WEBVIEWS.with_borrow_mut(|map| {
-            let webview = webview.build().unwrap();
-            map.insert(id, webview)
-        });
-        WINDOWS.with_borrow_mut(|map| map.insert(id, window));
+            let id = window.id();
+            WEBVIEWS.with_borrow_mut(|map| {
+                let webview = webview.build().unwrap();
+                map.insert(id, webview)
+            });
+            WINDOWS.with_borrow_mut(|map| map.insert(id, window));
 
-        Ok(LuaWindow { window_id: id })
+            Ok(LuaWindow { window_id: id })
+        })
     }
 }
 

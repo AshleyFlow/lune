@@ -11,7 +11,7 @@ mod regex;
 mod serde;
 mod stdio;
 mod task;
-mod window;
+mod webview;
 
 #[cfg(feature = "roblox")]
 mod roblox;
@@ -27,7 +27,7 @@ pub enum LuneBuiltin {
     Regex,
     Serde,
     Stdio,
-    Window,
+    Webview,
     #[cfg(feature = "roblox")]
     Roblox,
 }
@@ -44,7 +44,7 @@ impl LuneBuiltin {
             Self::Regex => "regex",
             Self::Serde => "serde",
             Self::Stdio => "stdio",
-            Self::Window => "window",
+            Self::Webview => "webview",
             #[cfg(feature = "roblox")]
             Self::Roblox => "roblox",
         }
@@ -61,7 +61,7 @@ impl LuneBuiltin {
             Self::Regex => regex::create(lua),
             Self::Serde => serde::create(lua),
             Self::Stdio => stdio::create(lua),
-            Self::Window => window::create(lua),
+            Self::Webview => webview::create(lua),
             #[cfg(feature = "roblox")]
             Self::Roblox => roblox::create(lua),
         };
@@ -88,7 +88,7 @@ impl FromStr for LuneBuiltin {
             "regex" => Ok(Self::Regex),
             "serde" => Ok(Self::Serde),
             "stdio" => Ok(Self::Stdio),
-            "window" => Ok(Self::Window),
+            "webview" => Ok(Self::Webview),
             #[cfg(feature = "roblox")]
             "roblox" => Ok(Self::Roblox),
             _ => Err(format!("Unknown builtin library '{s}'")),

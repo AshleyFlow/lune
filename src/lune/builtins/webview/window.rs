@@ -1,34 +1,16 @@
-mod enums;
+use std::{rc::Weak, time::Duration};
 
-use crate::lune::util::TableBuilder;
-use enums::LuaWindowEvent;
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
-use std::{cell::RefCell, collections::HashMap, rc::Weak, time::Duration};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
     platform::pump_events::EventLoopExtPumpEvents,
-    window::{Window, WindowBuilder, WindowId},
+    window::{Window, WindowBuilder},
 };
 use wry::{WebView, WebViewBuilder};
 
-thread_local! {
-    static WEBVIEWS: RefCell<HashMap<WindowId, WebView>> = RefCell::new(HashMap::new());
-}
-
-pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
-    let events = TableBuilder::new(lua)?
-        .with_value("Nothing", LuaWindowEvent::Nothing)?
-        .with_value("Redraw", LuaWindowEvent::Redraw)?
-        .with_value("Exit", LuaWindowEvent::Exit)?
-        .build_readonly()?;
-
-    TableBuilder::new(lua)?
-        .with_value("events", events)?
-        .with_function("new", LuaWindow::new)?
-        .build_readonly()
-}
+use super::enums::LuaWindowEvent;
 
 pub struct LuaWindow {}
 

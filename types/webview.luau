@@ -9,22 +9,22 @@ export type WindowEvent = "Enum.WindowEvent"
 
 	```lua
 	local webview = require("@lune/webview")
-	local my_window = window.new({
+	local window = webview.new({
 		title = "Hello, World!",
 	})
 
-	while true do
-		local event = my_window:process_events()
-
-		if event == window.events.Exit then
+	webview.event_loop(function(id, event)
+		if event == window.events.Exit and id == window.id then
 			-- Exit
-			my_window:set_visible(false)
-			break
+			window:set_visible(false)
+			return true
 		end
-	end
+
+		return false
+	end)
 	```
 
-	* `event_loop` ( callback: ( WindowId, WindowEvent ) -> void ) -> void
+	* `event_loop` ( callback: ( WindowId, WindowEvent ) -> boolean ) -> void
 ]=]
 local webview = {}
 
@@ -75,6 +75,26 @@ webview.events = {
 
 --[=[
 	@within Webview
+
+	### Warning!
+	
+	Using more than one event_loop will result in unexpected behaviour
+
+	### Example usage
+
+	Return true in the callback function to exit the loop
+
+	```lua
+	webview.event_loop(function(id, event)
+		if event == window.events.Exit and id == window.id then
+			-- Exit
+			window:set_visible(false)
+			return true
+		end
+
+		return false
+	end)
+	```
 ]=]
 webview.event_loop = function(
 	callback: (window_id: WindowId, event: WindowEvent) -> boolean

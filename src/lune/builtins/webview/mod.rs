@@ -24,7 +24,35 @@ thread_local! {
 }
 
 pub struct LuaWindowId(WindowId);
-impl LuaUserData for LuaWindowId {}
+impl LuaUserData for LuaWindowId {
+    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method("__eq", |_, this, other: LuaWindowId| Ok(this.0 == other.0));
+    }
+}
+
+impl<'lua> FromLua<'lua> for LuaWindowId {
+    fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+        let userdata = value.as_userdata();
+
+        if let Some(userdata) = userdata {
+            if let Ok(this) = userdata.borrow::<Self>() {
+                return Ok(Self(this.0));
+            } else {
+                return Err(LuaError::FromLuaConversionError {
+                    from: value.type_name(),
+                    to: "LuaWindowId",
+                    message: None,
+                });
+            }
+        }
+
+        Err(LuaError::FromLuaConversionError {
+            from: value.type_name(),
+            to: "userdata",
+            message: None,
+        })
+    }
+}
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     let events = TableBuilder::new(lua)?

@@ -5,7 +5,7 @@ use mlua_luau_scheduler::LuaSpawnExt;
 use winit::window::{WindowBuilder, WindowId};
 use wry::WebViewBuilder;
 
-use super::{EVENT_LOOP, WEBVIEWS, WINDOWS};
+use super::{LuaWindowId, EVENT_LOOP, WEBVIEWS, WINDOWS};
 
 pub struct LuaWindow {
     pub window_id: WindowId,
@@ -140,5 +140,11 @@ impl LuaUserData for LuaWindow {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_async_method("run_script", lua_window_run_script);
         methods.add_method("set_visible", lua_window_set_visible);
+    }
+
+    fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("id", |_lua, this: &LuaWindow| {
+            Ok(LuaWindowId(this.window_id))
+        });
     }
 }

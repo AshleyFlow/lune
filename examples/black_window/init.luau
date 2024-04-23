@@ -19,6 +19,9 @@ my_window:run_script(init_script)
 
 webview.event_loop(function(window_id, event)
 	if event == webview.events.Exit then
+		print(window_id == my_window.id)
+		print(window_id, my_window.id)
+
 		my_window:set_visible(false)
 
 		-- returning true will break the loop

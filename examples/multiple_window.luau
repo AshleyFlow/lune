@@ -12,11 +12,11 @@ local window2 = webview.new({
 webview.event_loop(function(id, event)
 	if event == webview.events.Exit then
 		if id == window1.id then
-			window1:set_visible(false)
-			window2:set_visible(false)
+			window1.set_visible(false)
+			window2.set_visible(false)
 			return true
 		else
-			window2:set_visible(false)
+			window2.set_visible(false)
 		end
 	end
 

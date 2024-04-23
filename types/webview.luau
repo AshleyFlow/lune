@@ -38,12 +38,12 @@ export type WindowId = {}
 	@interface Window
 	@within Webview
 
-	* `run_script` (self, script: string, callback: (string) -> void?) -> void
-	* `set_visible` (self, visible: boolean) -> void
+	* `run_script` (script: string, callback: (string) -> void?) -> void
+	* `set_visible` (visible: boolean) -> void
 ]=]
 export type Window = {
-	run_script: (self: Window, script: string, callback: (string) -> ()?) -> (),
-	set_visible: (self: Window, visible: boolean) -> (),
+	run_script: (script: string, callback: (string) -> ()?) -> (),
+	set_visible: (visible: boolean) -> (),
 	id: WindowId,
 }
 

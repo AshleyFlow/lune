@@ -16,6 +16,23 @@ use wry::WebView;
 
 use self::window::LuaWindow;
 
+const WINDOW_IMPL_LUA: &str = r#"
+return freeze(setmetatable({
+    run_script = function(...)
+		return window:run_script(...)
+	end,
+    set_visible = function(...)
+		return window:set_visible(...)
+	end,
+}, {
+    __index = function(self, key)
+        if key == "id" then
+            return window.id
+        end
+    end,
+}))
+"#;
+
 thread_local! {
     pub static WEBVIEWS: RefCell<HashMap<WindowId, WebView>> = RefCell::new(HashMap::new());
     pub static WINDOWS: RefCell<HashMap<WindowId, Window>> = RefCell::new(HashMap::new());
@@ -63,7 +80,26 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
 
     TableBuilder::new(lua)?
         .with_value("events", events)?
-        .with_function("new", LuaWindow::new)?
+        .with_function("new", |lua, config: LuaTable| {
+            let setmetatable = lua.globals().get::<_, LuaFunction>("setmetatable")?;
+            let lib = LuaWindow::new(lua, config)?;
+
+            let table_freeze = lua
+                .globals()
+                .get::<_, LuaTable>("table")?
+                .get::<_, LuaFunction>("freeze")?;
+
+            let env = TableBuilder::new(lua)?
+                .with_value("window", lib)?
+                .with_value("setmetatable", setmetatable)?
+                .with_value("freeze", table_freeze)?
+                .build_readonly()?;
+
+            lua.load(WINDOW_IMPL_LUA)
+                .set_name("window")
+                .set_environment(env)
+                .eval::<LuaTable>()
+        })?
         .with_async_function("event_loop", window_event_loop)?
         .build_readonly()
 }

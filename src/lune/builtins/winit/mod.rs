@@ -20,17 +20,23 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     lua.spawn_local(async {
         loop {
             EVENT_LOOP.with(|event_loop| {
+                let mut message: () = ();
+
                 event_loop.borrow_mut().pump_events(
                     Some(Duration::ZERO),
                     |event, elwt| match event {
                         winit::event::Event::WindowEvent { window_id, event } => {
-                            EVENT_LOOP_SENDER.send(()).unwrap();
+                            message = ();
                         }
                         _ => {
-                            EVENT_LOOP_SENDER.send(()).unwrap();
+                            message = ();
                         }
                     },
                 );
+
+                if EVENT_LOOP_SENDER.receiver_count() > 0 {
+                    EVENT_LOOP_SENDER.send(message).unwrap();
+                }
             });
 
             tokio::time::sleep(Duration::ZERO).await;

@@ -1,4 +1,4 @@
-mod config;
+pub mod config;
 
 use self::config::LuaWindow;
 use super::EVENT_LOOP;

@@ -60,14 +60,14 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
             EVENT_LOOP.with(|event_loop| {
                 let mut event_loop = event_loop.borrow_mut();
 
-                event_loop.pump_events(Some(Duration::ZERO), |event, _elwt| {
-                    if let winit::event::Event::WindowEvent {
+                event_loop.pump_events(Some(Duration::ZERO), |event, _elwt| match event {
+                    winit::event::Event::WindowEvent {
                         window_id,
                         event: winit::event::WindowEvent::CloseRequested,
-                    } = event
-                    {
+                    } => {
                         message = (Some(window_id), EventLoopMessage::CloseRequested);
-                    } else if let winit::event::Event::WindowEvent {
+                    }
+                    winit::event::Event::WindowEvent {
                         window_id,
                         event:
                             winit::event::WindowEvent::KeyboardInput {
@@ -75,12 +75,12 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                                 event,
                                 is_synthetic: _,
                             },
-                    } = event
-                    {
+                    } => {
                         if let Some(key) = event.text {
                             message = (Some(window_id), EventLoopMessage::KeyCode(key.to_string()));
                         }
                     }
+                    _ => {}
                 });
             });
 

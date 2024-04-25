@@ -9,35 +9,32 @@ use winit::{
     platform::pump_events::EventLoopExtPumpEvents,
 };
 
-thread_local! {
-    pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
-}
+// thread_local! {
+//     pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
+// }
 
 pub static EVENT_LOOP_SENDER: Lazy<tokio::sync::watch::Sender<()>> =
     Lazy::new(|| tokio::sync::watch::Sender::new(()));
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     lua.spawn_local(async {
+        let mut event_loop = EventLoopBuilder::new().build().unwrap();
+
         loop {
-            EVENT_LOOP.with(|event_loop| {
-                let mut message: () = ();
+            let mut message: () = ();
 
-                event_loop.borrow_mut().pump_events(
-                    Some(Duration::ZERO),
-                    |event, elwt| match event {
-                        winit::event::Event::WindowEvent { window_id, event } => {
-                            message = ();
-                        }
-                        _ => {
-                            message = ();
-                        }
-                    },
-                );
-
-                if EVENT_LOOP_SENDER.receiver_count() > 0 {
-                    EVENT_LOOP_SENDER.send(message).unwrap();
+            event_loop.pump_events(Some(Duration::ZERO), |event, elwt| match event {
+                winit::event::Event::WindowEvent { window_id, event } => {
+                    message = ();
+                }
+                _ => {
+                    message = ();
                 }
             });
+
+            if EVENT_LOOP_SENDER.receiver_count() > 0 {
+                EVENT_LOOP_SENDER.send(message).unwrap();
+            }
 
             tokio::time::sleep(Duration::ZERO).await;
         }

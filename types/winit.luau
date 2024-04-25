@@ -41,6 +41,15 @@ export type Window = {
 export type WebView = {}
 
 --[=[
+	@interface Window
+	@within Winit
+]=]
+export type WebViewConfig = {
+	init_script: string?,
+	url: string,
+}
+
+--[=[
 	@within Winit
 
 	Events received from the event loop
@@ -87,7 +96,7 @@ end
 	Creates and returns a WebView
 	```
 ]=]
-winit.create_webview = function(window: Window): WebView
+winit.create_webview = function(window: Window, config: WebViewConfig): WebView
 	return nil :: any
 end
 

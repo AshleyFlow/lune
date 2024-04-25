@@ -17,17 +17,17 @@ impl LuaUserData for LuaWindow {
             Ok(())
         });
 
-        methods.add_method("has_webview", |_lua: &Lua, this: &Self, _: ()| {
-            Ok(this.webview.is_some())
-        });
-
-        methods.add_method("get_webview", |_lua: &Lua, this: &Self, _: ()| {
-            if this.webview.is_some() {
-                Ok(this.webview.clone().unwrap())
-            } else {
-                Err(LuaError::RuntimeError("Window does not have a WebView, check with window:has_webview() before using window:get_webview()".into()))
-            }
-        });
+        methods.add_method(
+            "get_webview",
+            |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
+                if this.webview.is_some() {
+                    let clone = this.webview.clone().unwrap();
+                    Ok(LuaValue::UserData(lua.create_userdata(clone)?))
+                } else {
+                    Ok(LuaValue::Nil)
+                }
+            },
+        );
 
         methods.add_meta_method(
             "__eq",

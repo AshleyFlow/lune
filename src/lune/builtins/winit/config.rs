@@ -26,17 +26,9 @@ impl EventLoopMessage {
 
 impl LuaUserData for EventLoopMessage {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_meta_method("__eq", |_lua, this: &Self, other: Self| Ok(*this == other));
-    }
-}
-
-impl<'lua> FromLua<'lua> for EventLoopMessage {
-    fn from_lua(value: LuaValue<'lua>, _: &'lua Lua) -> LuaResult<Self> {
-        if let Some(userdata) = value.as_userdata() {
-            let this = userdata.borrow::<Self>()?;
-            Ok(*this)
-        } else {
-            Err(LuaError::RuntimeError("".into()))
-        }
+        methods.add_meta_method(
+            "__eq",
+            |_lua, this: &Self, other: LuaUserDataRef<'lua, Self>| Ok(*this == *other),
+        );
     }
 }

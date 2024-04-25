@@ -77,7 +77,23 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                             },
                     } => {
                         if let Some(key) = event.text {
-                            message = (Some(window_id), EventLoopMessage::KeyCode(key.to_string()));
+                            let keycode: String = match event.logical_key {
+                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Escape) => {
+                                    "esc".to_string()
+                                }
+                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Tab) => {
+                                    "tab".to_string()
+                                }
+                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Enter) => {
+                                    "enter".to_string()
+                                }
+                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Space) => {
+                                    "space".to_string()
+                                }
+                                _ => key.to_string(),
+                            };
+
+                            message = (Some(window_id), EventLoopMessage::KeyCode(keycode));
                         }
                     }
                     _ => {}

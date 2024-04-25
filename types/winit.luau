@@ -10,7 +10,7 @@ export type BreakLoop = "Identifier.BreakLoop"
 
 	```lua
 	local winit = require("@luneweb/winit")
-	local window = winit.new()
+	local window = winit.create_window()
 
 	winit.event_loop(window, function(break_loop, msg)
 		if event == winit.events.CloseRequested then
@@ -77,7 +77,7 @@ end
 	Creates and returns a Window
 	```
 ]=]
-winit.new = function(): Window
+winit.create_window = function(): Window
 	return nil :: any
 end
 

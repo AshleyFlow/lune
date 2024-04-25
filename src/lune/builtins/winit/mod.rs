@@ -32,7 +32,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .with_value("events", events)?
         .with_async_function("event_loop", winit_event_loop)?
         .with_async_function("run", winit_run)?
-        .with_function("new", winit_new)?
+        .with_function("create_window", winit_create_window)?
         .with_function("create_webview", winit_create_webview)?
         .build_readonly()
 }
@@ -41,7 +41,7 @@ thread_local! {
     pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
 }
 
-pub fn winit_new(lua: &Lua, _: ()) -> LuaResult<LuaAnyUserData> {
+pub fn winit_create_window(lua: &Lua, _: ()) -> LuaResult<LuaAnyUserData> {
     window::create(lua)
 }
 

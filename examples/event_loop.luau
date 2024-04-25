@@ -1,6 +1,6 @@
 local winit = require("@luneweb/winit")
 
-local window = winit.new()
+local window = winit.create_window()
 
 print(window:has_webview())
 
@@ -13,7 +13,7 @@ winit.event_loop(window, function(break_loop, msg)
 	return nil
 end)
 
-local window = winit.new()
+local window = winit.create_window()
 local webview = winit.create_webview(window)
 
 print(window:has_webview())

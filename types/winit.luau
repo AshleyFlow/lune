@@ -1,4 +1,3 @@
-export type WindowEvent = "Enum.WindowEvent"
 export type BreakLoop = "Identifier.BreakLoop"
 
 --[=[
@@ -30,8 +29,7 @@ local winit = {}
 ]=]
 export type Window = {
 	close: (self: Window) -> (),
-	has_webview: (self: Window) -> boolean,
-	get_webview: (self: Window) -> WebView,
+	get_webview: (self: Window) -> WebView?,
 }
 
 --[=[
@@ -52,10 +50,24 @@ export type WebViewConfig = {
 --[=[
 	@within Winit
 
-	Events received from the event loop
+	A Window Event
+]=]
+export type WindowEvent = {
+	get_keycode: (self: WindowEvent) -> string?,
+}
+
+--[=[
+	@within Winit
+
+	A collection of the Window Events that are received from the event loop
+
+	* `CloseRequested`
+	* `KeyCode`
+	* `None`
 ]=]
 winit.events = {
 	CloseRequested = (nil :: any) :: WindowEvent,
+	KeyCode = (nil :: any) :: WindowEvent,
 	None = (nil :: any) :: WindowEvent,
 }
 

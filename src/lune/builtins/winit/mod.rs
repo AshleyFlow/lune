@@ -11,12 +11,18 @@ use winit::{event_loop::EventLoopBuilder, platform::pump_events::EventLoopExtPum
 //     pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
 // }
 
+pub enum EventLoopHandle {
+    Break,
+}
+
+impl LuaUserData for EventLoopHandle {}
+
 pub static EVENT_LOOP_SENDER: Lazy<tokio::sync::watch::Sender<()>> =
     Lazy::new(|| tokio::sync::watch::Sender::new(()));
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     TableBuilder::new(lua)?
-        .with_async_function("eventLoop", winit_event_loop)?
+        .with_async_function("event_loop", winit_event_loop)?
         .with_async_function("run", winit_run)?
         .build_readonly()
 }
@@ -60,18 +66,16 @@ pub async fn winit_event_loop(lua: &Lua, callback: LuaFunction<'_>) -> LuaResult
 
                 if changed.is_ok() {
                     let message = *listener.borrow_and_update();
-                    let callback_result = inner_callback.call_async::<_, LuaValue>(message).await?;
+                    let callback_result = inner_callback
+                        .call_async::<_, LuaValue>((EventLoopHandle::Break, message))
+                        .await?;
 
-                    if callback_result.is_boolean() {
-                        if callback_result.as_boolean().unwrap() {
-                            break;
+                    if let Some(userdata) = callback_result.as_userdata() {
+                        if let Ok(handle) = userdata.borrow::<EventLoopHandle>() {
+                            match *handle {
+                                EventLoopHandle::Break => break,
+                            }
                         }
-                    } else {
-                        return Err(LuaError::FromLuaConversionError {
-                            from: callback_result.type_name(),
-                            to: "boolean",
-                            message: Some("Return either 'true' to break the event loop, or 'false' to keep it running.".into()),
-                        });
                     }
                 }
 

@@ -1,6 +1,8 @@
 local winit = require("@luneweb/winit")
 
-local window = winit.create_window()
+local window = winit.create_window({
+	title = "Hello, Lune!",
+})
 
 print(window:get_webview())
 
@@ -15,7 +17,7 @@ winit.event_loop(window, function(break_loop, msg)
 	return nil
 end)
 
-local window = winit.create_window()
+local window = winit.create_window({})
 local init_script = [[
 	document.addEventListener('DOMContentLoaded', function() {
 		document.body.style.transform = 'translateX(250px)'

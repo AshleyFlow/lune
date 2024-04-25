@@ -33,13 +33,21 @@ export type Window = {
 }
 
 --[=[
-	@interface Window
+	@interface WindowConfig
+	@within Winit
+]=]
+export type WindowConfig = {
+	title: string?,
+}
+
+--[=[
+	@interface WebView
 	@within Winit
 ]=]
 export type WebView = {}
 
 --[=[
-	@interface Window
+	@interface WebViewConfig
 	@within Winit
 ]=]
 export type WebViewConfig = {
@@ -98,7 +106,7 @@ end
 	Creates and returns a Window
 	```
 ]=]
-winit.create_window = function(): Window
+winit.create_window = function(config: WindowConfig): Window
 	return nil :: any
 end
 

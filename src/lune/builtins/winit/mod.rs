@@ -41,8 +41,11 @@ thread_local! {
     pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
 }
 
-pub fn winit_create_window(lua: &Lua, _: ()) -> LuaResult<LuaAnyUserData> {
-    window::create(lua)
+pub fn winit_create_window<'lua>(
+    lua: &'lua Lua,
+    values: LuaMultiValue<'lua>,
+) -> LuaResult<LuaAnyUserData<'lua>> {
+    window::create(lua, values)
 }
 
 pub fn winit_create_webview<'lua>(

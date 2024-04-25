@@ -67,6 +67,19 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                     } = event
                     {
                         message = (Some(window_id), EventLoopMessage::CloseRequested);
+                    } else if let winit::event::Event::WindowEvent {
+                        window_id,
+                        event:
+                            winit::event::WindowEvent::KeyboardInput {
+                                device_id: _,
+                                event,
+                                is_synthetic: _,
+                            },
+                    } = event
+                    {
+                        if let Some(key) = event.text {
+                            message = (Some(window_id), EventLoopMessage::KeyCode(key.to_string()));
+                        }
                     }
                 });
             });
@@ -122,7 +135,7 @@ pub async fn winit_event_loop(lua: &Lua, values: LuaMultiValue<'_>) -> LuaResult
                     (window, callback.clone())
                 };
 
-                let message = *listener.borrow_and_update();
+                let message = listener.borrow_and_update().clone();
 
                 if let Some(window_id) = message.0 {
                     if window.window.id() != window_id {

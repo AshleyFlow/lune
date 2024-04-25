@@ -1,27 +1,22 @@
-use std::{cell::RefCell, time::Duration};
+mod config;
 
 use crate::lune::util::TableBuilder;
-use futures_util::FutureExt;
 use mlua::prelude::*;
-use mlua_luau_scheduler::{IntoLuaThread, LuaSchedulerExt, LuaSpawnExt};
+use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
+use std::time::Duration;
 use winit::{event_loop::EventLoopBuilder, platform::pump_events::EventLoopExtPumpEvents};
 
-// thread_local! {
-//     pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
-// }
+use self::config::{EventLoopHandle, EventLoopMessage};
 
-pub enum EventLoopHandle {
-    Break,
-}
-
-impl LuaUserData for EventLoopHandle {}
-
-pub static EVENT_LOOP_SENDER: Lazy<tokio::sync::watch::Sender<()>> =
-    Lazy::new(|| tokio::sync::watch::Sender::new(()));
+pub static EVENT_LOOP_SENDER: Lazy<tokio::sync::watch::Sender<EventLoopMessage>> =
+    Lazy::new(|| tokio::sync::watch::Sender::new(EventLoopMessage::None));
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
+    let events = EventLoopMessage::create_lua_table(lua)?;
+
     TableBuilder::new(lua)?
+        .with_value("events", events)?
         .with_async_function("event_loop", winit_event_loop)?
         .with_async_function("run", winit_run)?
         .build_readonly()
@@ -32,15 +27,16 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
         let mut event_loop = EventLoopBuilder::new().build().unwrap();
 
         loop {
-            let mut message: () = ();
+            let mut message: EventLoopMessage = EventLoopMessage::None;
 
             event_loop.pump_events(Some(Duration::ZERO), |event, elwt| match event {
-                winit::event::Event::WindowEvent { window_id, event } => {
-                    message = ();
-                }
-                _ => {
-                    message = ();
-                }
+                winit::event::Event::WindowEvent { window_id, event } => match event {
+                    winit::event::WindowEvent::CloseRequested => {
+                        message = EventLoopMessage::CloseRequested
+                    }
+                    _ => {}
+                },
+                _ => {}
             });
 
             if EVENT_LOOP_SENDER.receiver_count() > 0 {

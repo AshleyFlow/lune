@@ -1,11 +1,15 @@
 mod config;
+mod window;
 
 use crate::lune::util::TableBuilder;
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
-use std::time::Duration;
-use winit::{event_loop::EventLoopBuilder, platform::pump_events::EventLoopExtPumpEvents};
+use std::{cell::RefCell, time::Duration};
+use winit::{
+    event_loop::{EventLoop, EventLoopBuilder},
+    platform::pump_events::EventLoopExtPumpEvents,
+};
 
 use self::config::{EventLoopHandle, EventLoopMessage};
 
@@ -19,24 +23,35 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .with_value("events", events)?
         .with_async_function("event_loop", winit_event_loop)?
         .with_async_function("run", winit_run)?
+        .with_function("new", winit_new)?
         .build_readonly()
+}
+
+thread_local! {
+    pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
+}
+
+pub fn winit_new(lua: &Lua, _: ()) -> LuaResult<LuaAnyUserData> {
+    window::create(lua)
 }
 
 pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
     lua.spawn_local(async {
-        let mut event_loop = EventLoopBuilder::new().build().unwrap();
-
         loop {
             let mut message: EventLoopMessage = EventLoopMessage::None;
 
-            event_loop.pump_events(Some(Duration::ZERO), |event, elwt| {
-                if let winit::event::Event::WindowEvent {
-                    window_id,
-                    event: winit::event::WindowEvent::CloseRequested,
-                } = event
-                {
-                    message = EventLoopMessage::CloseRequested;
-                }
+            EVENT_LOOP.with(|event_loop| {
+                let mut event_loop = event_loop.borrow_mut();
+
+                event_loop.pump_events(Some(Duration::ZERO), |event, elwt| {
+                    if let winit::event::Event::WindowEvent {
+                        window_id,
+                        event: winit::event::WindowEvent::CloseRequested,
+                    } = event
+                    {
+                        message = EventLoopMessage::CloseRequested;
+                    }
+                });
             });
 
             if EVENT_LOOP_SENDER.receiver_count() > 0 {

@@ -1,6 +1,5 @@
-use mlua::prelude::*;
-
 use crate::lune::util::TableBuilder;
+use mlua::prelude::*;
 
 // EventLoopHandle
 pub enum EventLoopHandle {

@@ -4,6 +4,7 @@
 local task = require("@luneweb/task")
 local winit = require("@luneweb/winit")
 local messages = 0
+local window = winit.new()
 
 winit.event_loop(function(break_loop, msg)
 	print(msg == winit.events.None)

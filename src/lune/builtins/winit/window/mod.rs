@@ -15,6 +15,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaAnyUserData> {
     let lua_window = LuaWindow {
         sender: tokio::sync::watch::Sender::new(super::config::EventLoopMessage::None),
         window,
+        webview: None,
     };
 
     lua.create_userdata(lua_window)

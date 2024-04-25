@@ -1,4 +1,5 @@
 mod config;
+mod webview;
 mod window;
 
 use crate::lune::util::TableBuilder;
@@ -32,6 +33,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .with_async_function("event_loop", winit_event_loop)?
         .with_async_function("run", winit_run)?
         .with_function("new", winit_new)?
+        .with_function("create_webview", winit_create_webview)?
         .build_readonly()
 }
 
@@ -41,6 +43,13 @@ thread_local! {
 
 pub fn winit_new(lua: &Lua, _: ()) -> LuaResult<LuaAnyUserData> {
     window::create(lua)
+}
+
+pub fn winit_create_webview<'lua>(
+    lua: &'lua Lua,
+    values: LuaMultiValue<'lua>,
+) -> LuaResult<LuaAnyUserData<'lua>> {
+    webview::create(lua, values)
 }
 
 pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {

@@ -30,7 +30,15 @@ local winit = {}
 ]=]
 export type Window = {
 	close: (self: Window) -> (),
+	has_webview: (self: Window) -> boolean,
+	get_webview: (self: Window) -> WebView,
 }
+
+--[=[
+	@interface Window
+	@within Winit
+]=]
+export type WebView = {}
 
 --[=[
 	@within Winit
@@ -70,6 +78,16 @@ end
 	```
 ]=]
 winit.new = function(): Window
+	return nil :: any
+end
+
+--[=[
+	@within Winit
+
+	Creates and returns a WebView
+	```
+]=]
+winit.create_webview = function(window: Window): WebView
 	return nil :: any
 end
 

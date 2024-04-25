@@ -1,25 +1,31 @@
---!nocheck
---!nolint
-
-local task = require("@luneweb/task")
 local winit = require("@luneweb/winit")
 
 local window = winit.new()
 
+print(window:has_webview())
+
 winit.event_loop(window, function(break_loop, msg)
 	if msg == winit.events.CloseRequested then
 		window:close()
 		return break_loop
 	end
+
+	return nil
 end)
 
 local window = winit.new()
+local webview = winit.create_webview(window)
+
+print(window:has_webview())
+print(window:get_webview())
 
 winit.event_loop(window, function(break_loop, msg)
 	if msg == winit.events.CloseRequested then
 		window:close()
 		return break_loop
 	end
+
+	return nil
 end)
 
 winit.run()

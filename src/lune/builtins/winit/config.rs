@@ -49,5 +49,16 @@ impl LuaUserData for EventLoopMessage {
                 ))
             },
         );
+
+        methods.add_meta_method(
+            "__tostring",
+            |_lua: &Lua, this: &Self, _: ()| -> LuaResult<String> {
+                Ok(match this {
+                    EventLoopMessage::CloseRequested => "CloseRequested".to_string(),
+                    EventLoopMessage::KeyCode(keycode) => format!("KeyCode({})", keycode),
+                    EventLoopMessage::None => "None".to_string(),
+                })
+            },
+        );
     }
 }

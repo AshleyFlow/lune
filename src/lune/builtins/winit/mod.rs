@@ -29,14 +29,14 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
         loop {
             let mut message: EventLoopMessage = EventLoopMessage::None;
 
-            event_loop.pump_events(Some(Duration::ZERO), |event, elwt| match event {
-                winit::event::Event::WindowEvent { window_id, event } => match event {
-                    winit::event::WindowEvent::CloseRequested => {
-                        message = EventLoopMessage::CloseRequested
-                    }
-                    _ => {}
-                },
-                _ => {}
+            event_loop.pump_events(Some(Duration::ZERO), |event, elwt| {
+                if let winit::event::Event::WindowEvent {
+                    window_id,
+                    event: winit::event::WindowEvent::CloseRequested,
+                } = event
+                {
+                    message = EventLoopMessage::CloseRequested;
+                }
             });
 
             if EVENT_LOOP_SENDER.receiver_count() > 0 {

@@ -1,6 +1,7 @@
 use std::{cell::RefCell, time::Duration};
 
 use crate::lune::util::TableBuilder;
+use futures_util::FutureExt;
 use mlua::prelude::*;
 use mlua_luau_scheduler::{IntoLuaThread, LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
@@ -14,6 +15,13 @@ pub static EVENT_LOOP_SENDER: Lazy<tokio::sync::watch::Sender<()>> =
     Lazy::new(|| tokio::sync::watch::Sender::new(()));
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
+    TableBuilder::new(lua)?
+        .with_async_function("eventLoop", winit_event_loop)?
+        .with_async_function("run", winit_run)?
+        .build_readonly()
+}
+
+pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
     lua.spawn_local(async {
         let mut event_loop = EventLoopBuilder::new().build().unwrap();
 
@@ -31,15 +39,15 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
 
             if EVENT_LOOP_SENDER.receiver_count() > 0 {
                 EVENT_LOOP_SENDER.send(message).unwrap();
+            } else {
+                break;
             }
 
             tokio::time::sleep(Duration::ZERO).await;
         }
     });
 
-    TableBuilder::new(lua)?
-        .with_async_function("eventLoop", winit_event_loop)?
-        .build_readonly()
+    Ok(())
 }
 
 pub async fn winit_event_loop(lua: &Lua, callback: LuaFunction<'_>) -> LuaResult<()> {
@@ -52,7 +60,19 @@ pub async fn winit_event_loop(lua: &Lua, callback: LuaFunction<'_>) -> LuaResult
 
                 if changed.is_ok() {
                     let message = *listener.borrow_and_update();
-                    inner_callback.call::<_, ()>(message)?;
+                    let callback_result = inner_callback.call_async::<_, LuaValue>(message).await?;
+
+                    if callback_result.is_boolean() {
+                        if callback_result.as_boolean().unwrap() {
+                            break;
+                        }
+                    } else {
+                        return Err(LuaError::FromLuaConversionError {
+                            from: callback_result.type_name(),
+                            to: "boolean",
+                            message: Some("Return either 'true' to break the event loop, or 'false' to keep it running.".into()),
+                        });
+                    }
                 }
 
                 tokio::time::sleep(Duration::ZERO).await;

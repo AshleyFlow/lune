@@ -8,3 +8,5 @@ handle = winit.event_loop(window, function(msg)
 		handle.stop()
 	end
 end)
+
+winit.run()

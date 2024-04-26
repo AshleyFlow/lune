@@ -6,10 +6,11 @@ local window = winit.create_window({
 
 print(window.webview, window.size)
 
-winit.event_loop(window, function(break_loop, msg)
+local handle
+handle = winit.event_loop(window, function(msg)
 	if msg == winit.events.CloseRequested then
 		window:close()
-		return break_loop
+		handle.stop()
 	elseif msg == winit.events.KeyCode then
 		print(msg.keycode, msg.pressed)
 	elseif msg == winit.events.MouseButton then
@@ -17,8 +18,6 @@ winit.event_loop(window, function(break_loop, msg)
 	elseif msg == winit.events.CursorMoved then
 		print(msg.position)
 	end
-
-	return nil
 end)
 
 local window = winit.create_window({})
@@ -35,13 +34,15 @@ local webview = winit.create_webview(window, {
 
 print(window.webview, window.size)
 
-winit.event_loop(window, function(break_loop, msg)
+local handle = winit.event_loop(window, function(msg)
 	if msg == winit.events.CloseRequested then
 		window:close()
-		return break_loop
 	end
-
-	return nil
 end)
 
 winit.run()
+
+require("@luneweb/task").wait(5)
+
+window:close()
+handle.stop()

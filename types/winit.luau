@@ -1,4 +1,3 @@
-export type BreakLoop = "Identifier.BreakLoop"
 export type Dimension = {
 	x: number,
 	y: number,
@@ -76,6 +75,15 @@ export type WindowEvent = {
 --[=[
 	@within Winit
 
+	The handler returend by creating a event loop
+]=]
+export type WindowEventLoopHandle = {
+	stop: () -> (),
+}
+
+--[=[
+	@within Winit
+
 	A collection of the Window Events that are received from the event loop
 
 	* `CloseRequested`
@@ -106,8 +114,8 @@ winit.events = {
 ]=]
 winit.event_loop = function(
 	window: Window,
-	callback: (break_loop: BreakLoop, event: WindowEvent) -> BreakLoop?
-): Window
+	callback: (event: WindowEvent) -> ()
+): WindowEventLoopHandle
 	return nil :: any
 end
 

@@ -1,13 +1,6 @@
 use crate::lune::util::TableBuilder;
 use mlua::prelude::*;
 
-// EventLoopHandle
-pub enum EventLoopHandle {
-    Break,
-}
-
-impl LuaUserData for EventLoopHandle {}
-
 // EventLoopMessage
 #[derive(Clone, PartialEq)]
 pub enum EventLoopMessage {

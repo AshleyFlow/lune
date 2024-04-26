@@ -4,7 +4,7 @@ mod window;
 
 use crate::lune::util::TableBuilder;
 use mlua::prelude::*;
-use mlua_luau_scheduler::LuaSpawnExt;
+use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
 use std::{cell::RefCell, rc::Weak, time::Duration};
 use winit::{
@@ -13,10 +13,7 @@ use winit::{
     window::WindowId,
 };
 
-use self::{
-    config::{EventLoopHandle, EventLoopMessage},
-    window::config::LuaWindow,
-};
+use self::{config::EventLoopMessage, window::config::LuaWindow};
 
 pub static EVENT_LOOP_SENDER: Lazy<
     tokio::sync::watch::Sender<(Option<WindowId>, EventLoopMessage)>,
@@ -156,7 +153,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                 });
             });
 
-            if EVENT_LOOP_SENDER.receiver_count() > 0 {
+            if !EVENT_LOOP_SENDER.is_closed() {
                 EVENT_LOOP_SENDER.send(message).unwrap();
             } else {
                 break;
@@ -169,7 +166,10 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
     Ok(())
 }
 
-pub async fn winit_event_loop(lua: &Lua, values: LuaMultiValue<'_>) -> LuaResult<()> {
+pub async fn winit_event_loop<'lua>(
+    lua: &'lua Lua,
+    values: LuaMultiValue<'lua>,
+) -> LuaResult<LuaTable<'lua>> {
     let field1 = values.get(0).expect("Parameter 1 is missing");
     let field2 = values.get(1).expect("Parameter 2 is missing");
 
@@ -185,6 +185,8 @@ pub async fn winit_event_loop(lua: &Lua, values: LuaMultiValue<'_>) -> LuaResult
         .upgrade()
         .expect("Lua was dropped unexpectedly");
 
+    let (shutdown_tx, mut shutdown_rx) = tokio::sync::watch::channel(false);
+
     lua.spawn_local(async move {
         let mut listener = EVENT_LOOP_SENDER.subscribe();
 
@@ -192,50 +194,59 @@ pub async fn winit_event_loop(lua: &Lua, values: LuaMultiValue<'_>) -> LuaResult
         let inner_field2 = inner_lua.registry_value::<LuaValue>(&callback_key).unwrap();
 
         loop {
-            let changed = listener.changed().await;
+            tokio::select! {
+                _ = listener.changed() => {
 
-            if changed.is_ok() {
-                let (window, callback) = {
-                    let window = inner_field1
-                        .as_userdata()
-                        .unwrap()
-                        .borrow::<LuaWindow>()
-                        .unwrap();
-
-                    let callback = inner_field2.as_function().unwrap();
-
-                    (window, callback.clone())
-                };
-
-                let message = listener.borrow_and_update().clone();
-
-                if let Some(window_id) = message.0 {
-                    if window.window.id() != window_id {
-                        drop(window);
-                        continue;
-                    }
-                }
-
-                window.window.request_redraw();
-                drop(window);
-
-                let callback_future =
-                    callback.call_async::<_, LuaValue>((EventLoopHandle::Break, message.1));
-
-                let callback_result = callback_future.await.unwrap();
-
-                if let Some(userdata) = callback_result.as_userdata() {
-                    if let Ok(handle) = userdata.borrow::<EventLoopHandle>() {
-                        match *handle {
-                            EventLoopHandle::Break => break,
-                        }
+                },
+                res = shutdown_rx.changed() => {
+                    if res.is_ok() {
+                        break;
                     }
                 }
             }
+
+            let (window, callback) = {
+                let window = inner_field1
+                    .as_userdata()
+                    .unwrap()
+                    .borrow::<LuaWindow>()
+                    .unwrap();
+
+                let callback = inner_field2.as_function().unwrap();
+
+                (window, callback.clone())
+            };
+
+            let message = listener.borrow_and_update().clone();
+
+            if let Some(window_id) = message.0 {
+                if window.window.id() != window_id {
+                    drop(window);
+                    continue;
+                }
+            }
+
+            window.window.request_redraw();
+            drop(window);
+
+            let thread = inner_lua.create_thread(callback).unwrap();
+            inner_lua
+                .as_ref()
+                .push_thread_back(thread, message.1)
+                .unwrap();
 
             tokio::time::sleep(Duration::ZERO).await;
         }
     });
 
-    Ok(())
+    TableBuilder::new(lua)?
+        .with_function("stop", move |_lua: &Lua, _: ()| {
+            if shutdown_tx.is_closed() {
+                return Ok(());
+            }
+
+            shutdown_tx.send(true).unwrap();
+            Ok(())
+        })?
+        .build_readonly()
 }

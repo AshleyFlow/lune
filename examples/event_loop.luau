@@ -14,6 +14,8 @@ winit.event_loop(window, function(break_loop, msg)
 		print(msg:get_keycode(), msg:get_pressed())
 	elseif msg == winit.events.MouseButton then
 		print(msg:get_mousebutton(), msg:get_pressed())
+	elseif msg == winit.events.CursorMoved then
+		print(msg:get_position())
 	end
 
 	return nil

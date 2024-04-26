@@ -14,6 +14,7 @@ pub enum EventLoopMessage {
     CloseRequested,
     MouseButtton(String, bool),
     KeyCode(String, bool),
+    CursorMoved(f64, f64),
     None,
 }
 
@@ -23,6 +24,7 @@ impl EventLoopMessage {
             .with_value("CloseRequested", Self::CloseRequested)?
             .with_value("MouseButton", Self::MouseButtton("".into(), false))?
             .with_value("KeyCode", Self::KeyCode("".into(), false))?
+            .with_value("CursorMoved", Self::CursorMoved(0.0, 0.0))?
             .with_value("None", Self::None)?
             .build_readonly()
     }
@@ -65,6 +67,21 @@ impl LuaUserData for EventLoopMessage {
             },
         );
 
+        methods.add_method(
+            "get_position",
+            |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
+                match this {
+                    EventLoopMessage::CursorMoved(x, y) => Ok(LuaValue::Table(
+                        TableBuilder::new(lua)?
+                            .with_value("x", x.into_lua(lua)?)?
+                            .with_value("y", y.into_lua(lua)?)?
+                            .build_readonly()?,
+                    )),
+                    _ => Ok(LuaValue::Nil),
+                }
+            },
+        );
+
         methods.add_meta_method(
             "__eq",
             |_lua, this: &Self, other: LuaUserDataRef<'lua, Self>| {
@@ -73,6 +90,7 @@ impl LuaUserData for EventLoopMessage {
                     (Self::CloseRequested, Self::CloseRequested)
                         | (Self::MouseButtton(..), Self::MouseButtton(..))
                         | (Self::KeyCode(..), Self::KeyCode(..))
+                        | (Self::CursorMoved(..), Self::CursorMoved(..))
                         | (Self::None, Self::None)
                 ))
             },
@@ -88,6 +106,9 @@ impl LuaUserData for EventLoopMessage {
                     }
                     EventLoopMessage::KeyCode(keycode, pressed) => {
                         format!("KeyCode({}:{})", keycode, pressed)
+                    }
+                    EventLoopMessage::CursorMoved(x, y) => {
+                        format!("CursorMoved(x: {}, y: {})", x, y)
                     }
                     EventLoopMessage::None => "None".to_string(),
                 })

@@ -73,6 +73,19 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                     winit::event::Event::WindowEvent {
                         window_id,
                         event:
+                            winit::event::WindowEvent::CursorMoved {
+                                device_id: _,
+                                position,
+                            },
+                    } => {
+                        message = (
+                            Some(window_id),
+                            EventLoopMessage::CursorMoved(position.x, position.y),
+                        );
+                    }
+                    winit::event::Event::WindowEvent {
+                        window_id,
+                        event:
                             winit::event::WindowEvent::MouseInput {
                                 device_id: _,
                                 state,

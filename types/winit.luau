@@ -64,6 +64,7 @@ export type WindowEvent = {
 	get_mousebutton: (self: WindowEvent) -> string?,
 	get_keycode: (self: WindowEvent) -> string?,
 	get_pressed: (self: WindowEvent) -> boolean?,
+	get_position: (self: WindowEvent) -> { x: number, y: number }?,
 }
 
 --[=[
@@ -79,6 +80,7 @@ winit.events = {
 	CloseRequested = (nil :: any) :: WindowEvent,
 	MouseButton = (nil :: any) :: WindowEvent,
 	KeyCode = (nil :: any) :: WindowEvent,
+	CursorMoved = (nil :: any) :: WindowEvent,
 	None = (nil :: any) :: WindowEvent,
 }
 

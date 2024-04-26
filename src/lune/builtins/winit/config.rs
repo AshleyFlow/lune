@@ -12,8 +12,8 @@ impl LuaUserData for EventLoopHandle {}
 #[derive(Clone, PartialEq)]
 pub enum EventLoopMessage {
     CloseRequested,
-    MouseButtton(String),
-    KeyCode(String),
+    MouseButtton(String, bool),
+    KeyCode(String, bool),
     None,
 }
 
@@ -21,8 +21,8 @@ impl EventLoopMessage {
     pub fn create_lua_table(lua: &Lua) -> LuaResult<LuaTable> {
         TableBuilder::new(lua)?
             .with_value("CloseRequested", Self::CloseRequested)?
-            .with_value("MouseButton", Self::MouseButtton("".into()))?
-            .with_value("KeyCode", Self::KeyCode("".into()))?
+            .with_value("MouseButton", Self::MouseButtton("".into(), false))?
+            .with_value("KeyCode", Self::KeyCode("".into(), false))?
             .with_value("None", Self::None)?
             .build_readonly()
     }
@@ -34,7 +34,9 @@ impl LuaUserData for EventLoopMessage {
             "get_mousebutton",
             |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
                 match this {
-                    EventLoopMessage::MouseButtton(button) => Ok(button.clone().into_lua(lua)?),
+                    EventLoopMessage::MouseButtton(button, _) => {
+                        Ok(button.clone().into_lua(lua)?)
+                    }
                     _ => Ok(LuaValue::Nil),
                 }
             },
@@ -44,7 +46,20 @@ impl LuaUserData for EventLoopMessage {
             "get_keycode",
             |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
                 match this {
-                    EventLoopMessage::KeyCode(keycode) => Ok(keycode.clone().into_lua(lua)?),
+                    EventLoopMessage::KeyCode(keycode, _) => Ok(keycode.clone().into_lua(lua)?),
+                    _ => Ok(LuaValue::Nil),
+                }
+            },
+        );
+
+        methods.add_method(
+            "get_pressed",
+            |_lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
+                match this {
+                    EventLoopMessage::MouseButtton(_, pressed, ..) => {
+                        Ok(LuaValue::Boolean(*pressed))
+                    }
+                    EventLoopMessage::KeyCode(_, pressed, ..) => Ok(LuaValue::Boolean(*pressed)),
                     _ => Ok(LuaValue::Nil),
                 }
             },
@@ -56,8 +71,8 @@ impl LuaUserData for EventLoopMessage {
                 Ok(matches!(
                     (this, other.clone()),
                     (Self::CloseRequested, Self::CloseRequested)
-                        | (Self::MouseButtton(_), Self::MouseButtton(_))
-                        | (Self::KeyCode(_), Self::KeyCode(_))
+                        | (Self::MouseButtton(..), Self::MouseButtton(..))
+                        | (Self::KeyCode(..), Self::KeyCode(..))
                         | (Self::None, Self::None)
                 ))
             },
@@ -68,8 +83,12 @@ impl LuaUserData for EventLoopMessage {
             |_lua: &Lua, this: &Self, _: ()| -> LuaResult<String> {
                 Ok(match this {
                     EventLoopMessage::CloseRequested => "CloseRequested".to_string(),
-                    EventLoopMessage::MouseButtton(button) => format!("MouseButton({})", button),
-                    EventLoopMessage::KeyCode(keycode) => format!("KeyCode({})", keycode),
+                    EventLoopMessage::MouseButtton(button, pressed) => {
+                        format!("MouseButton({}:{})", button, pressed)
+                    }
+                    EventLoopMessage::KeyCode(keycode, pressed) => {
+                        format!("KeyCode({}:{})", keycode, pressed)
+                    }
                     EventLoopMessage::None => "None".to_string(),
                 })
             },

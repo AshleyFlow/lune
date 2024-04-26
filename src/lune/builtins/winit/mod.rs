@@ -75,7 +75,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                         event:
                             winit::event::WindowEvent::MouseInput {
                                 device_id: _,
-                                state: _,
+                                state,
                                 button,
                             },
                     } => {
@@ -89,7 +89,15 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                         };
 
                         if let Some(button) = button {
-                            message = (Some(window_id), EventLoopMessage::MouseButtton(button));
+                            let pressed = match state {
+                                winit::event::ElementState::Pressed => true,
+                                winit::event::ElementState::Released => false,
+                            };
+
+                            message = (
+                                Some(window_id),
+                                EventLoopMessage::MouseButtton(button, pressed),
+                            );
                         }
                     }
                     winit::event::Event::WindowEvent {
@@ -118,7 +126,17 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                                 _ => key.to_string(),
                             };
 
-                            message = (Some(window_id), EventLoopMessage::KeyCode(keycode));
+                            let pressed = if event.repeat {
+                                true
+                            } else {
+                                match event.state {
+                                    winit::event::ElementState::Pressed => true,
+                                    winit::event::ElementState::Released => false,
+                                }
+                            };
+
+                            message =
+                                (Some(window_id), EventLoopMessage::KeyCode(keycode, pressed));
                         }
                     }
                     _ => {}

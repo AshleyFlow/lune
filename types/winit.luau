@@ -63,6 +63,7 @@ export type WebViewConfig = {
 export type WindowEvent = {
 	get_mousebutton: (self: WindowEvent) -> string?,
 	get_keycode: (self: WindowEvent) -> string?,
+	get_pressed: (self: WindowEvent) -> boolean?,
 }
 
 --[=[

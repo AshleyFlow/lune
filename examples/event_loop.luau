@@ -11,9 +11,9 @@ winit.event_loop(window, function(break_loop, msg)
 		window:close()
 		return break_loop
 	elseif msg == winit.events.KeyCode then
-		print("keycode:", msg:get_keycode())
+		print(msg:get_keycode(), msg:get_pressed())
 	elseif msg == winit.events.MouseButton then
-		print("mousebutton:", msg:get_mousebutton())
+		print(msg:get_mousebutton(), msg:get_pressed())
 	end
 
 	return nil

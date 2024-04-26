@@ -134,6 +134,7 @@ itertools = "0.12"
 clap = { optional = true, version = "4.1", features = ["derive"] }
 include_dir = { optional = true, version = "0.7", features = ["glob"] }
 rustyline = { optional = true, version = "14.0" }
+zip_next = "1.1.1"
 
 ### ROBLOX
 
@@ -150,9 +151,8 @@ rbx_xml = { optional = true, version = "0.13.2" }
 
 
 ### UI
-wry = { version = "0.39.0", features = ["devtools"] }
+wry = { version = "0.39.3", features = ["devtools"] }
 winit = "0.29.15"
-zip_next = "1.1.1"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.9", features = ["wincon", "winuser"] }

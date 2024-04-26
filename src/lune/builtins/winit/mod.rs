@@ -73,6 +73,28 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                     winit::event::Event::WindowEvent {
                         window_id,
                         event:
+                            winit::event::WindowEvent::MouseInput {
+                                device_id: _,
+                                state: _,
+                                button,
+                            },
+                    } => {
+                        let button = match button {
+                            winit::event::MouseButton::Back => Some("back".to_string()),
+                            winit::event::MouseButton::Forward => Some("forward".to_string()),
+                            winit::event::MouseButton::Left => Some("left".to_string()),
+                            winit::event::MouseButton::Right => Some("right".to_string()),
+                            winit::event::MouseButton::Middle => Some("middle".to_string()),
+                            _ => None,
+                        };
+
+                        if let Some(button) = button {
+                            message = (Some(window_id), EventLoopMessage::MouseButtton(button));
+                        }
+                    }
+                    winit::event::Event::WindowEvent {
+                        window_id,
+                        event:
                             winit::event::WindowEvent::KeyboardInput {
                                 device_id: _,
                                 event,

@@ -25,9 +25,11 @@ local init_script = [[
 	})
 ]]
 
-winit.create_webview(window2, {
+local webview = winit.create_webview(window2, {
 	url = "https://tauri.app/",
 	init_script = init_script,
 })
 
 winit.run()
+
+print(webview:evaluate('("b" + "a" + +"a" + "a").toLowerCase()'))

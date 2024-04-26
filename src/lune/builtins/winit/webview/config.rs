@@ -1,12 +1,37 @@
 use mlua::prelude::*;
 use wry::WebView;
 
+use crate::lune::builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat};
+
 // LuaWebView
 pub struct LuaWebView {
     pub webview: WebView,
 }
 
-impl LuaUserData for LuaWebView {}
+impl LuaUserData for LuaWebView {
+    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_async_method(
+            "evaluate",
+            |lua: &Lua, this: &Self, script: String| async move {
+                let (result_tx, mut result_rx) = tokio::sync::watch::channel("null".to_string());
+
+                this.webview
+                    .evaluate_script_with_callback(script.as_str(), move |res| {
+                        result_tx.send(res.clone()).unwrap();
+                    })
+                    .unwrap();
+
+                if result_rx.changed().await.is_ok() {
+                    let borrowed = result_rx.borrow_and_update();
+                    let config = EncodeDecodeConfig::from(EncodeDecodeFormat::Json);
+                    config.deserialize_from_string(lua, borrowed.as_str().into())
+                } else {
+                    Ok(LuaValue::Nil)
+                }
+            },
+        )
+    }
+}
 
 // LuaWebViewConfig
 pub struct LuaWebViewConfig {

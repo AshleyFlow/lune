@@ -49,7 +49,25 @@ export type WindowConfig = {
 	@interface WebView
 	@within Winit
 ]=]
-export type WebView = {}
+export type WebView = {
+	--[=[
+		Runs the provided javascript code inside the WebView, and returns the result as a lua value by using serde.decode
+
+		### Warning
+
+		Make sure to only use this after calling `winit.run()`, otherwise it will yield forever.
+
+		### Example Usage
+
+		```lua
+		winit.run()
+
+		local result = webview:evaluate('("b" + "a" + +"a" + "a").toLowerCase()')
+		print(result) -- "banana"
+		```
+	]=]
+	evaluate: (self: WebView, javascript: string) -> unknown,
+}
 
 --[=[
 	@interface WebViewConfig

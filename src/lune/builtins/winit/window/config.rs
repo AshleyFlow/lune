@@ -1,4 +1,7 @@
-use crate::lune::builtins::winit::{config::EventLoopMessage, webview::config::LuaWebView};
+use crate::lune::{
+    builtins::winit::{config::EventLoopMessage, webview::config::LuaWebView},
+    util::TableBuilder,
+};
 use mlua::prelude::*;
 use std::rc::Rc;
 use winit::window::Window;
@@ -28,6 +31,13 @@ impl LuaUserData for LuaWindow {
                 }
             },
         );
+
+        methods.add_method("get_size", |lua: &Lua, this: &Self, _: ()| {
+            TableBuilder::new(lua)?
+                .with_value("x", this.window.inner_size().width)?
+                .with_value("y", this.window.inner_size().height)?
+                .build_readonly()
+        });
 
         methods.add_meta_method(
             "__eq",

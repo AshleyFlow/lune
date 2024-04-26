@@ -11,11 +11,11 @@ winit.event_loop(window, function(break_loop, msg)
 		window:close()
 		return break_loop
 	elseif msg == winit.events.KeyCode then
-		print(msg:get_keycode(), msg:get_pressed())
+		print(msg.keycode, msg.pressed)
 	elseif msg == winit.events.MouseButton then
-		print(msg:get_mousebutton(), msg:get_pressed())
+		print(msg.mousebutton, msg.pressed)
 	elseif msg == winit.events.CursorMoved then
-		print(msg:get_position())
+		print(msg.position)
 	end
 
 	return nil

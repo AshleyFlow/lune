@@ -31,57 +31,35 @@ impl EventLoopMessage {
 }
 
 impl LuaUserData for EventLoopMessage {
+    fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("mousebutton", |lua: &Lua, this: &Self| match this {
+            EventLoopMessage::MouseButtton(button, _) => Ok(button.clone().into_lua(lua)?),
+            _ => Ok(LuaValue::Nil),
+        });
+
+        fields.add_field_method_get("keycode", |lua: &Lua, this: &Self| match this {
+            EventLoopMessage::KeyCode(keycode, _) => Ok(keycode.clone().into_lua(lua)?),
+            _ => Ok(LuaValue::Nil),
+        });
+
+        fields.add_field_method_get("pressed", |_lua: &Lua, this: &Self| match this {
+            EventLoopMessage::MouseButtton(_, pressed, ..) => Ok(LuaValue::Boolean(*pressed)),
+            EventLoopMessage::KeyCode(_, pressed, ..) => Ok(LuaValue::Boolean(*pressed)),
+            _ => Ok(LuaValue::Nil),
+        });
+
+        fields.add_field_method_get("position", |lua: &Lua, this: &Self| match this {
+            EventLoopMessage::CursorMoved(x, y) => Ok(LuaValue::Table(
+                TableBuilder::new(lua)?
+                    .with_value("x", x.into_lua(lua)?)?
+                    .with_value("y", y.into_lua(lua)?)?
+                    .build_readonly()?,
+            )),
+            _ => Ok(LuaValue::Nil),
+        });
+    }
+
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_method(
-            "get_mousebutton",
-            |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
-                match this {
-                    EventLoopMessage::MouseButtton(button, _) => {
-                        Ok(button.clone().into_lua(lua)?)
-                    }
-                    _ => Ok(LuaValue::Nil),
-                }
-            },
-        );
-
-        methods.add_method(
-            "get_keycode",
-            |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
-                match this {
-                    EventLoopMessage::KeyCode(keycode, _) => Ok(keycode.clone().into_lua(lua)?),
-                    _ => Ok(LuaValue::Nil),
-                }
-            },
-        );
-
-        methods.add_method(
-            "get_pressed",
-            |_lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
-                match this {
-                    EventLoopMessage::MouseButtton(_, pressed, ..) => {
-                        Ok(LuaValue::Boolean(*pressed))
-                    }
-                    EventLoopMessage::KeyCode(_, pressed, ..) => Ok(LuaValue::Boolean(*pressed)),
-                    _ => Ok(LuaValue::Nil),
-                }
-            },
-        );
-
-        methods.add_method(
-            "get_position",
-            |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
-                match this {
-                    EventLoopMessage::CursorMoved(x, y) => Ok(LuaValue::Table(
-                        TableBuilder::new(lua)?
-                            .with_value("x", x.into_lua(lua)?)?
-                            .with_value("y", y.into_lua(lua)?)?
-                            .build_readonly()?,
-                    )),
-                    _ => Ok(LuaValue::Nil),
-                }
-            },
-        );
-
         methods.add_meta_method(
             "__eq",
             |_lua, this: &Self, other: LuaUserDataRef<'lua, Self>| {

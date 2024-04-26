@@ -1,4 +1,8 @@
 export type BreakLoop = "Identifier.BreakLoop"
+export type Dimension = {
+	x: number,
+	y: number,
+}
 
 --[=[
 	@class Winit
@@ -29,7 +33,9 @@ local winit = {}
 ]=]
 export type Window = {
 	close: (self: Window) -> (),
-	get_webview: (self: Window) -> WebView?,
+
+	webview: WebView?,
+	size: Dimension,
 }
 
 --[=[
@@ -64,7 +70,7 @@ export type WindowEvent = {
 	mousebutton: string?,
 	keycode: string?,
 	pressed: boolean?,
-	position: { x: number, y: number }?,
+	position: Dimension?,
 }
 
 --[=[

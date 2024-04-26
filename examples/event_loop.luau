@@ -4,7 +4,7 @@ local window = winit.create_window({
 	title = "Hello, Lune!",
 })
 
-print(window:get_webview())
+print(window.webview, window.size)
 
 winit.event_loop(window, function(break_loop, msg)
 	if msg == winit.events.CloseRequested then
@@ -33,7 +33,7 @@ local webview = winit.create_webview(window, {
 	url = "https://tauri.app",
 })
 
-print(window:get_webview())
+print(window.webview, window.size)
 
 winit.event_loop(window, function(break_loop, msg)
 	if msg == winit.events.CloseRequested then

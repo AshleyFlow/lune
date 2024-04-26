@@ -4,7 +4,7 @@ use crate::lune::{
 };
 use mlua::prelude::*;
 use std::rc::Rc;
-use winit::window::Window;
+use tao::window::Window;
 
 // LuaWindow
 pub struct LuaWindow {

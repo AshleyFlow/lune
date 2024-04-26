@@ -152,7 +152,7 @@ rbx_xml = { optional = true, version = "0.13.2" }
 
 ### UI
 wry = { version = "0.39.3", features = ["devtools"] }
-winit = "0.29.15"
+tao = "0.27.1"
 
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.9", features = ["wincon", "winuser"] }

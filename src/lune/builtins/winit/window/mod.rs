@@ -3,7 +3,7 @@ pub mod config;
 use self::config::{LuaWindow, LuaWindowConfig};
 use super::EVENT_LOOP;
 use mlua::prelude::*;
-use winit::window::WindowBuilder;
+use tao::window::WindowBuilder;
 
 pub fn create<'lua>(
     lua: &'lua Lua,

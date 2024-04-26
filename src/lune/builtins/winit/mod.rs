@@ -7,9 +7,9 @@ use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
 use std::{cell::RefCell, rc::Weak, time::Duration};
-use winit::{
+use tao::{
     event_loop::{EventLoop, EventLoopBuilder},
-    platform::pump_events::EventLoopExtPumpEvents,
+    platform::run_return::EventLoopExtRunReturn,
     window::WindowId,
 };
 
@@ -35,7 +35,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
 }
 
 thread_local! {
-    pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build().unwrap());
+    pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build());
 }
 
 pub fn winit_create_window<'lua>(
@@ -60,96 +60,91 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
             EVENT_LOOP.with(|event_loop| {
                 let mut event_loop = event_loop.borrow_mut();
 
-                event_loop.pump_events(Some(Duration::ZERO), |event, _elwt| match event {
-                    winit::event::Event::WindowEvent {
-                        window_id,
-                        event: winit::event::WindowEvent::CloseRequested,
-                    } => {
-                        message = (Some(window_id), EventLoopMessage::CloseRequested);
-                    }
-                    winit::event::Event::WindowEvent {
-                        window_id,
-                        event:
-                            winit::event::WindowEvent::CursorMoved {
-                                device_id: _,
-                                position,
-                            },
-                    } => {
-                        message = (
-                            Some(window_id),
-                            EventLoopMessage::CursorMoved(position.x, position.y),
-                        );
-                    }
-                    winit::event::Event::WindowEvent {
-                        window_id,
-                        event:
-                            winit::event::WindowEvent::MouseInput {
-                                device_id: _,
-                                state,
-                                button,
-                            },
-                    } => {
-                        let button = match button {
-                            winit::event::MouseButton::Back => Some("back".to_string()),
-                            winit::event::MouseButton::Forward => Some("forward".to_string()),
-                            winit::event::MouseButton::Left => Some("left".to_string()),
-                            winit::event::MouseButton::Right => Some("right".to_string()),
-                            winit::event::MouseButton::Middle => Some("middle".to_string()),
-                            _ => None,
-                        };
+                event_loop.run_return(|event, _elwt, flow| {
+                    *flow = tao::event_loop::ControlFlow::Exit;
 
-                        if let Some(button) = button {
-                            let pressed = match state {
-                                winit::event::ElementState::Pressed => true,
-                                winit::event::ElementState::Released => false,
-                            };
-
+                    match event {
+                        tao::event::Event::WindowEvent {
+                            window_id,
+                            event: tao::event::WindowEvent::CloseRequested,
+                            ..
+                        } => {
+                            message = (Some(window_id), EventLoopMessage::CloseRequested);
+                        }
+                        tao::event::Event::WindowEvent {
+                            window_id,
+                            event:
+                                tao::event::WindowEvent::CursorMoved {
+                                    device_id: _,
+                                    position,
+                                    ..
+                                },
+                            ..
+                        } => {
                             message = (
                                 Some(window_id),
-                                EventLoopMessage::MouseButtton(button, pressed),
+                                EventLoopMessage::CursorMoved(position.x, position.y),
                             );
                         }
-                    }
-                    winit::event::Event::WindowEvent {
-                        window_id,
-                        event:
-                            winit::event::WindowEvent::KeyboardInput {
-                                device_id: _,
-                                event,
-                                is_synthetic: _,
-                            },
-                    } => {
-                        if let Some(key) = event.text {
-                            let keycode: String = match event.logical_key {
-                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Escape) => {
-                                    "esc".to_string()
-                                }
-                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Tab) => {
-                                    "tab".to_string()
-                                }
-                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Enter) => {
-                                    "enter".to_string()
-                                }
-                                winit::keyboard::Key::Named(winit::keyboard::NamedKey::Space) => {
-                                    "space".to_string()
-                                }
-                                _ => key.to_string(),
+                        tao::event::Event::WindowEvent {
+                            window_id,
+                            event:
+                                tao::event::WindowEvent::MouseInput {
+                                    device_id: _,
+                                    state,
+                                    button,
+                                    ..
+                                },
+                            ..
+                        } => {
+                            let button = match button {
+                                tao::event::MouseButton::Left => Some("left".to_string()),
+                                tao::event::MouseButton::Right => Some("right".to_string()),
+                                tao::event::MouseButton::Middle => Some("middle".to_string()),
+                                _ => None,
                             };
+
+                            if let Some(button) = button {
+                                let pressed = match state {
+                                    tao::event::ElementState::Pressed => true,
+                                    tao::event::ElementState::Released => false,
+                                    _ => false,
+                                };
+
+                                message = (
+                                    Some(window_id),
+                                    EventLoopMessage::MouseButtton(button, pressed),
+                                );
+                            }
+                        }
+                        tao::event::Event::WindowEvent {
+                            window_id,
+                            event:
+                                tao::event::WindowEvent::KeyboardInput {
+                                    device_id: _,
+                                    event,
+                                    is_synthetic: _,
+                                    ..
+                                },
+                            ..
+                        } => {
+                            let keycode: String = format!("{}", event.physical_key);
 
                             let pressed = if event.repeat {
                                 true
                             } else {
                                 match event.state {
-                                    winit::event::ElementState::Pressed => true,
-                                    winit::event::ElementState::Released => false,
+                                    tao::event::ElementState::Pressed => true,
+                                    tao::event::ElementState::Released => false,
+                                    _ => false,
                                 }
                             };
 
                             message =
                                 (Some(window_id), EventLoopMessage::KeyCode(keycode, pressed));
                         }
+                        _ => {}
                     }
-                    _ => {}
                 });
             });
 

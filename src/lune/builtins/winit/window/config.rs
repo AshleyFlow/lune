@@ -14,29 +14,28 @@ pub struct LuaWindow {
 }
 
 impl LuaUserData for LuaWindow {
-    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_method_mut("close", |_lua: &Lua, this: &mut Self, _: ()| {
-            this.window.set_visible(false);
-            Ok(())
+    fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("webview", |lua: &Lua, this: &Self| {
+            if this.webview.is_some() {
+                let clone = this.webview.clone().unwrap();
+                Ok(LuaValue::UserData(lua.create_userdata(clone)?))
+            } else {
+                Ok(LuaValue::Nil)
+            }
         });
 
-        methods.add_method(
-            "get_webview",
-            |lua: &Lua, this: &Self, _: ()| -> LuaResult<LuaValue> {
-                if this.webview.is_some() {
-                    let clone = this.webview.clone().unwrap();
-                    Ok(LuaValue::UserData(lua.create_userdata(clone)?))
-                } else {
-                    Ok(LuaValue::Nil)
-                }
-            },
-        );
-
-        methods.add_method("get_size", |lua: &Lua, this: &Self, _: ()| {
+        fields.add_field_method_get("size", |lua: &Lua, this: &Self| {
             TableBuilder::new(lua)?
                 .with_value("x", this.window.inner_size().width)?
                 .with_value("y", this.window.inner_size().height)?
                 .build_readonly()
+        });
+    }
+
+    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method_mut("close", |_lua: &Lua, this: &mut Self, _: ()| {
+            this.window.set_visible(false);
+            Ok(())
         });
 
         methods.add_meta_method(

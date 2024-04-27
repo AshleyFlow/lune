@@ -1,4 +1,4 @@
-use crate::lune::builtins::winit::config::{EventLoopMessage, LuaDimension};
+use crate::lune::builtins::wry::config::{EventLoopMessage, LuaDimension};
 use serde::Deserialize;
 
 // LuaWebViewMessage

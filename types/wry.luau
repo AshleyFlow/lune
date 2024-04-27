@@ -4,31 +4,31 @@ export type Dimension = {
 }
 
 --[=[
-	@class Winit
+	@class Wry
 
 	Built-in library for creating applications
 
 	### Example usage
 
 	```lua
-	local winit = require("@luneweb/winit")
-	local window = winit.create_window()
+	local wry = require("@luneweb/wry")
+	local window = wry.create_window()
 
-	winit.event_loop(window, function(break_loop, msg)
-		if event == winit.events.CloseRequested then
+	wry.event_loop(window, function(break_loop, msg)
+		if event == wry.events.CloseRequested then
 			window:close()
 			return break_loop
 		end
 	end)
 
-    winit.run()
+    wry.run()
 	```
 ]=]
-local winit = {}
+local wry = {}
 
 --[=[
 	@interface Window
-	@within Winit
+	@within Wry
 ]=]
 export type Window = {
 	close: (self: Window) -> (),
@@ -39,7 +39,7 @@ export type Window = {
 
 --[=[
 	@interface WindowConfig
-	@within Winit
+	@within Wry
 ]=]
 export type WindowConfig = {
 	title: string?,
@@ -47,7 +47,7 @@ export type WindowConfig = {
 
 --[=[
 	@interface WebView
-	@within Winit
+	@within Wry
 ]=]
 export type WebView = {
 	--[=[
@@ -55,12 +55,12 @@ export type WebView = {
 
 		### Warning
 
-		Make sure to only use this after calling `winit.run()`, otherwise it will yield forever.
+		Make sure to only use this after calling `wry.run()`, otherwise it will yield forever.
 
 		### Example Usage
 
 		```lua
-		winit.run()
+		wry.run()
 
 		local result = webview:evaluate('("b" + "a" + +"a" + "a").toLowerCase()')
 		print(result) -- "banana"
@@ -72,7 +72,7 @@ export type WebView = {
 
 --[=[
 	@interface WebViewConfig
-	@within Winit
+	@within Wry
 ]=]
 export type WebViewConfig = {
 	init_script: string?,
@@ -80,7 +80,7 @@ export type WebViewConfig = {
 }
 
 --[=[
-	@within Winit
+	@within Wry
 
 	A Window Event
 ]=]
@@ -92,7 +92,7 @@ export type WindowEvent = {
 }
 
 --[=[
-	@within Winit
+	@within Wry
 
 	The handler returend by creating a ipc handler
 ]=]
@@ -101,7 +101,7 @@ export type WebViewIPCHandle = {
 }
 
 --[=[
-	@within Winit
+	@within Wry
 
 	The handler returend by creating a event loop
 ]=]
@@ -110,7 +110,7 @@ export type WindowEventLoopHandle = {
 }
 
 --[=[
-	@within Winit
+	@within Wry
 
 	A collection of the Window Events that are received from the event loop
 	
@@ -124,7 +124,7 @@ export type WindowEventLoopHandle = {
 	* `CursorMoved`
 	* `None`
 ]=]
-winit.events = {
+wry.events = {
 	CloseRequested = (nil :: any) :: WindowEvent,
 	MouseButton = (nil :: any) :: WindowEvent,
 	KeyCode = (nil :: any) :: WindowEvent,
@@ -133,20 +133,20 @@ winit.events = {
 }
 
 --[=[
-	@within Winit
+	@within Wry
 
 	### Example usage
 
 	```lua
-	winit.event_loop(window, function(break_loop, msg)
-		if event == winit.events.CloseRequested then
+	wry.event_loop(window, function(break_loop, msg)
+		if event == wry.events.CloseRequested then
 			window:close()
 			return break_loop
 		end
 	end)
 	```
 ]=]
-winit.event_loop = function(
+wry.event_loop = function(
 	window: Window,
 	callback: (event: WindowEvent) -> ()
 ): WindowEventLoopHandle
@@ -154,27 +154,27 @@ winit.event_loop = function(
 end
 
 --[=[
-	@within Winit
+	@within Wry
 
 	Creates and returns a Window
 	```
 ]=]
-winit.create_window = function(config: WindowConfig): Window
+wry.create_window = function(config: WindowConfig): Window
 	return nil :: any
 end
 
 --[=[
-	@within Winit
+	@within Wry
 
 	Creates and returns a WebView
 	```
 ]=]
-winit.create_webview = function(window: Window, config: WebViewConfig): WebView
+wry.create_webview = function(window: Window, config: WebViewConfig): WebView
 	return nil :: any
 end
 
 --[=[
-	@within Winit
+	@within Wry
 
 	Start the event loop
 
@@ -185,15 +185,15 @@ end
     ### Example usage
 
     ```lua
-    winit.event_loop(window, function(break_loop, msg)
+    wry.event_loop(window, function(break_loop, msg)
 		-- handle events ...
 	end)
 
-    winit.run()
+    wry.run()
 	```
 ]=]
-winit.run = function(): Window
+wry.run = function(): Window
 	return nil :: any
 end
 
-return winit
+return wry

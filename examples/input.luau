@@ -1,15 +1,15 @@
-local winit = require("@luneweb/winit")
-local window, handle: winit.WindowEventLoopHandle = winit.create_window({}), nil
-local webview = winit.create_webview(window, {
+local wry = require("@luneweb/wry")
+local window, handle: wry.WindowEventLoopHandle = wry.create_window({}), nil
+local webview = wry.create_webview(window, {
 	url = "https://tauri.app/",
 })
 
-handle = winit.event_loop(window, function(msg)
-	if msg == winit.events.CloseRequested then
+handle = wry.event_loop(window, function(msg)
+	if msg == wry.events.CloseRequested then
 		window:close()
 		handle.stop()
-	elseif msg == winit.events.CursorMoved and msg.position then
-		local alpha: winit.Dimension = {
+	elseif msg == wry.events.CursorMoved and msg.position then
+		local alpha: wry.Dimension = {
 			x = msg.position.x / window.size.x,
 			y = msg.position.y / window.size.y,
 		}
@@ -23,4 +23,4 @@ handle = winit.event_loop(window, function(msg)
 	end
 end)
 
-winit.run()
+wry.run()

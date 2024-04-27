@@ -7,7 +7,6 @@ mod fs;
 mod luau;
 mod net;
 mod process;
-mod regex;
 mod serde;
 mod stdio;
 mod task;
@@ -24,7 +23,6 @@ pub enum LuneBuiltin {
     Net,
     Task,
     Process,
-    Regex,
     Serde,
     Stdio,
     Wry,
@@ -41,7 +39,6 @@ impl LuneBuiltin {
             Self::Net => "net",
             Self::Task => "task",
             Self::Process => "process",
-            Self::Regex => "regex",
             Self::Serde => "serde",
             Self::Stdio => "stdio",
             Self::Wry => "wry",
@@ -58,7 +55,6 @@ impl LuneBuiltin {
             Self::Net => net::create(lua),
             Self::Task => task::create(lua),
             Self::Process => process::create(lua),
-            Self::Regex => regex::create(lua),
             Self::Serde => serde::create(lua),
             Self::Stdio => stdio::create(lua),
             Self::Wry => wry::create(lua),
@@ -85,7 +81,6 @@ impl FromStr for LuneBuiltin {
             "net" => Ok(Self::Net),
             "task" => Ok(Self::Task),
             "process" => Ok(Self::Process),
-            "regex" => Ok(Self::Regex),
             "serde" => Ok(Self::Serde),
             "stdio" => Ok(Self::Stdio),
             "wry" => Ok(Self::Wry),

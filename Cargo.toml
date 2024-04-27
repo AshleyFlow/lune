@@ -25,6 +25,7 @@ cli = [
     "dep:clap",
     "dep:include_dir",
     "dep:rustyline",
+    "dep:zip_next",
 ]
 roblox = [
     "dep:glam",
@@ -75,7 +76,9 @@ pathdiff = "0.2"
 bstr = "1.9.1"
 pin-project = "1.0"
 urlencoding = "2.1"
-regex = "1.10.4"
+bstr = "1.9"
+regex = "1.10"
+self_cell = "1.0"
 
 ### RUNTIME
 
@@ -134,7 +137,7 @@ itertools = "0.12"
 clap = { optional = true, version = "4.1", features = ["derive"] }
 include_dir = { optional = true, version = "0.7", features = ["glob"] }
 rustyline = { optional = true, version = "14.0" }
-zip_next = "1.1.1"
+zip_next = { optional = true, version = "1.1" }
 
 ### ROBLOX
 

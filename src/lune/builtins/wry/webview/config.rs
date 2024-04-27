@@ -100,16 +100,27 @@ impl LuaUserData for LuaWebView {
 pub struct LuaWebViewConfig {
     pub init_script: Option<String>,
     pub url: String,
+    pub custom_protocol_name: Option<String>,
+    pub custom_protocol_handler: Option<LuaRegistryKey>,
 }
 
 impl<'lua> FromLua<'lua> for LuaWebViewConfig {
-    fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
+    fn from_lua(value: LuaValue<'lua>, lua: &'lua Lua) -> LuaResult<Self> {
         if let Some(config) = value.as_table() {
+            let custom_protocol_handler =
+                if let Ok(handler) = config.get::<_, LuaFunction>("custom_protocol_handler") {
+                    Some(lua.create_registry_value(handler)?)
+                } else {
+                    None
+                };
+
             Ok(Self {
                 init_script: config.get("init_script").ok(),
                 url: config
                     .get("url")
                     .expect("WebViewConfig is missing 'url' property"),
+                custom_protocol_name: config.get("custom_protocol_name").ok(),
+                custom_protocol_handler,
             })
         } else {
             Err(LuaError::FromLuaConversionError {

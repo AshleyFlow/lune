@@ -1,13 +1,17 @@
 pub mod config;
 pub mod input;
+mod request;
+mod response;
 
 use self::{
     config::{LuaWebView, LuaWebViewConfig, LuaWebViewScript},
     input::{config::LuaWebViewMessage, JAVASCRIPT_API},
+    request::LuaRequest,
+    response::LuaResponse,
 };
 use super::{window::config::LuaWindow, EVENT_LOOP};
 use mlua::prelude::*;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use wry::WebViewBuilder;
 
 pub fn create<'lua>(
@@ -26,6 +30,42 @@ pub fn create<'lua>(
         let mut init_script = LuaWebViewScript::new();
         init_script.write(JAVASCRIPT_API);
         init_script.extract_from_option(config.init_script);
+
+        let incomplete_custom_protocol_config = {
+            (config.custom_protocol_name.is_some() & config.custom_protocol_handler.is_none())
+                | (config.custom_protocol_name.is_none() & config.custom_protocol_handler.is_some())
+        };
+
+        if incomplete_custom_protocol_config {
+            return Err(LuaError::RuntimeError("config for custom_protocol is incomplete, both custom_protocol_name and custom_protocol_handler must be present".into()));
+        }
+
+        if let Some(custom_protocol_name) = config.custom_protocol_name {
+            let custom_protocol_thread_key = config.custom_protocol_handler.unwrap();
+
+            let inner_lua = lua
+                .app_data_ref::<Weak<Lua>>()
+                .expect("Missing weak lua ref")
+                .upgrade()
+                .expect("Lua was dropped unexpectedly");
+
+            webview_builder =
+                webview_builder.with_custom_protocol(custom_protocol_name, move |request| {
+                    let custom_protocol_handler = inner_lua
+                        .registry_value::<LuaFunction>(&custom_protocol_thread_key)
+                        .unwrap();
+
+                    let (head, body) = request.into_parts();
+                    let lua_req = LuaRequest { head, body };
+
+                    let lua_req_table = lua_req.into_lua_table(&inner_lua).unwrap();
+                    let res = custom_protocol_handler
+                        .call::<_, LuaResponse>(lua_req_table)
+                        .unwrap();
+
+                    res.into_response().unwrap()
+                });
+        }
 
         let window_id = window.window.id();
         let ipc_sender = tokio::sync::watch::Sender::new(String::new());

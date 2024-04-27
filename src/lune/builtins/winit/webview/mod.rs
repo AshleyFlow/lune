@@ -5,7 +5,7 @@ use self::{
     config::{LuaWebView, LuaWebViewConfig, LuaWebViewScript},
     input::{config::LuaWebViewMessage, JAVASCRIPT_API},
 };
-use super::{config::EventLoopMessage, window::config::LuaWindow, EVENT_LOOP};
+use super::{window::config::LuaWindow, EVENT_LOOP};
 use mlua::prelude::*;
 use std::rc::Rc;
 use wry::WebViewBuilder;
@@ -28,6 +28,8 @@ pub fn create<'lua>(
         init_script.extract_from_option(config.init_script);
 
         let window_id = window.window.id();
+        let ipc_sender = tokio::sync::watch::Sender::new(String::new());
+        let inner_ipc_sender = ipc_sender.clone();
 
         webview_builder = EVENT_LOOP.with(|event_loop| {
             let event_loop_proxy = event_loop.borrow().create_proxy();
@@ -41,8 +43,8 @@ pub fn create<'lua>(
                     let msg = message.into_eventloop_message().unwrap();
                     let send = (window_id, msg);
                     event_loop_proxy.send_event(send).unwrap();
-                } else {
-                    println!("custom user message.");
+                } else if inner_ipc_sender.receiver_count() > 0 {
+                    inner_ipc_sender.send(body.to_string()).unwrap();
                 }
             })
         });
@@ -50,7 +52,11 @@ pub fn create<'lua>(
         webview_builder = webview_builder.with_initialization_script(&init_script.read());
 
         let webview = webview_builder.build().unwrap();
-        let lua_webview = LuaWebView { webview };
+        let lua_webview = LuaWebView {
+            webview,
+            ipc_sender,
+        };
+
         let rc_lua_webview = Rc::new(lua_webview);
 
         window.webview = Some(Rc::clone(&rc_lua_webview));

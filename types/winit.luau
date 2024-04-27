@@ -67,6 +67,7 @@ export type WebView = {
 		```
 	]=]
 	evaluate: (self: WebView, javascript: string) -> unknown,
+	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
 }
 
 --[=[
@@ -88,6 +89,15 @@ export type WindowEvent = {
 	keycode: string?,
 	pressed: boolean?,
 	position: Dimension?,
+}
+
+--[=[
+	@within Winit
+
+	The handler returend by creating a ipc handler
+]=]
+export type WebViewIPCHandle = {
+	stop: () -> (),
 }
 
 --[=[

@@ -1,10 +1,16 @@
-use crate::lune::builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat};
+use crate::lune::{
+    builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat},
+    util::TableBuilder,
+};
 use mlua::prelude::*;
+use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
+use std::{rc::Weak, time::Duration};
 use wry::WebView;
 
 // LuaWebView
 pub struct LuaWebView {
     pub webview: WebView,
+    pub ipc_sender: tokio::sync::watch::Sender<String>,
 }
 
 impl LuaUserData for LuaWebView {
@@ -28,7 +34,65 @@ impl LuaUserData for LuaWebView {
                     Ok(LuaValue::Nil)
                 }
             },
-        )
+        );
+
+        methods.add_async_method(
+            "ipc_handler",
+            |lua: &Lua, this: &Self, callback: LuaFunction<'_>| async move {
+                let callback_key = lua.create_registry_value(callback)?;
+
+                let inner_lua = lua
+                    .app_data_ref::<Weak<Lua>>()
+                    .expect("Missing weak lua ref")
+                    .upgrade()
+                    .expect("Lua was dropped unexpectedly");
+
+                let (shutdown_tx, mut shutdown_rx) = tokio::sync::watch::channel(false);
+                let listener = this.ipc_sender.subscribe();
+
+                lua.spawn_local(async move {
+                    let mut inner_listener = listener.clone();
+
+                    let inner_callback = inner_lua
+                        .registry_value::<LuaFunction>(&callback_key)
+                        .unwrap();
+
+                    loop {
+                        tokio::select! {
+                            _ = inner_listener.changed() => {
+
+                            },
+                            res = shutdown_rx.changed() => {
+                                if res.is_ok() {
+                                    break;
+                                }
+                            }
+                        }
+
+                        let message = inner_listener.borrow_and_update().clone();
+                        let thread = inner_lua.create_thread(inner_callback.clone()).unwrap();
+                        let config = EncodeDecodeConfig::from(EncodeDecodeFormat::Json);
+                        let res = config
+                            .deserialize_from_string(&inner_lua, message.into())
+                            .unwrap();
+                        inner_lua.push_thread_back(thread, res).unwrap();
+
+                        tokio::time::sleep(Duration::ZERO).await;
+                    }
+                });
+
+                TableBuilder::new(lua)?
+                    .with_function("stop", move |_lua: &Lua, _: ()| {
+                        if shutdown_tx.is_closed() {
+                            return Ok(());
+                        }
+
+                        shutdown_tx.send(true).unwrap();
+                        Ok(())
+                    })?
+                    .build_readonly()
+            },
+        );
     }
 }
 
@@ -36,7 +100,6 @@ impl LuaUserData for LuaWebView {
 pub struct LuaWebViewConfig {
     pub init_script: Option<String>,
     pub url: String,
-    pub mimic_input: Option<bool>,
 }
 
 impl<'lua> FromLua<'lua> for LuaWebViewConfig {
@@ -47,7 +110,6 @@ impl<'lua> FromLua<'lua> for LuaWebViewConfig {
                 url: config
                     .get("url")
                     .expect("WebViewConfig is missing 'url' property"),
-                mimic_input: config.get("mimic_input").ok(),
             })
         } else {
             Err(LuaError::FromLuaConversionError {

@@ -38,29 +38,9 @@ pub fn create<'lua>(
                     serde_json::from_str(body);
 
                 if let Ok(message) = message {
-                    if let Some(position) = message.position {
-                        let msg = (
-                            window_id,
-                            EventLoopMessage::CursorMoved(position.x, position.y),
-                        );
-
-                        event_loop_proxy.send_event(msg).unwrap();
-                    } else if let Some(mousebutton) = message.mousebutton {
-                        let presed = message.pressed.unwrap();
-
-                        let msg = (
-                            window_id,
-                            EventLoopMessage::MouseButtton(mousebutton, presed),
-                        );
-
-                        event_loop_proxy.send_event(msg).unwrap();
-                    } else if let Some(keycode) = message.keycode {
-                        let presed = message.pressed.unwrap();
-
-                        let msg = (window_id, EventLoopMessage::KeyCode(keycode, presed));
-
-                        event_loop_proxy.send_event(msg).unwrap();
-                    }
+                    let msg = message.into_eventloop_message().unwrap();
+                    let send = (window_id, msg);
+                    event_loop_proxy.send_event(send).unwrap();
                 } else {
                     println!("custom user message.");
                 }

@@ -25,11 +25,17 @@ pub fn create<'lua>(
 
     if let Some(window) = field1.as_userdata() {
         let mut window = window.borrow_mut::<LuaWindow>()?;
-        let mut webview_builder = WebViewBuilder::new(&window.window).with_url(config.url);
+        let mut webview_builder = WebViewBuilder::new(&window.window);
 
         let mut init_script = LuaWebViewScript::new();
         init_script.write(JAVASCRIPT_API);
         init_script.extract_from_option(config.init_script);
+
+        if let Some(html) = config.html {
+            webview_builder = webview_builder.with_html(html);
+        } else if let Some(url) = config.url {
+            webview_builder = webview_builder.with_url(url);
+        }
 
         let incomplete_custom_protocol_config = {
             (config.custom_protocol_name.is_some() & config.custom_protocol_handler.is_none())

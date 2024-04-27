@@ -19,15 +19,13 @@ handle2 = wry.event_loop(window2, function(msg)
 	end
 end)
 
-local init_script = [[
-	window.onload = () => {
-		document.body.style.transform = 'translateX(250px)'
-	}
-]]
-
 local webview = wry.create_webview(window2, {
 	url = "https://tauri.app/",
-	init_script = init_script,
+	init_script = [[
+		window.onload = () => {
+			document.body.style.transform = 'translateX(250px)'
+		}
+	]],
 })
 
 wry.run()

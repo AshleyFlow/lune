@@ -118,7 +118,8 @@ export type WebView = {
 ]=]
 export type WebViewConfig = {
 	init_script: string?,
-	url: string,
+	html: string?,
+	url: string?,
 	custom_protocol_name: string?,
 	custom_protocol_handler: ((request: ServeRequest) -> ServeResponse | string)?,
 }

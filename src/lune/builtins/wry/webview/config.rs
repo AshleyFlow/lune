@@ -99,7 +99,8 @@ impl LuaUserData for LuaWebView {
 // LuaWebViewConfig
 pub struct LuaWebViewConfig {
     pub init_script: Option<String>,
-    pub url: String,
+    pub html: Option<String>,
+    pub url: Option<String>,
     pub custom_protocol_name: Option<String>,
     pub custom_protocol_handler: Option<LuaRegistryKey>,
 }
@@ -116,9 +117,8 @@ impl<'lua> FromLua<'lua> for LuaWebViewConfig {
 
             Ok(Self {
                 init_script: config.get("init_script").ok(),
-                url: config
-                    .get("url")
-                    .expect("WebViewConfig is missing 'url' property"),
+                html: config.get("html").ok(),
+                url: config.get("url").ok(),
                 custom_protocol_name: config.get("custom_protocol_name").ok(),
                 custom_protocol_handler,
             })

@@ -1,7 +1,6 @@
+use crate::lune::builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat};
 use mlua::prelude::*;
 use wry::WebView;
-
-use crate::lune::builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat};
 
 // LuaWebView
 pub struct LuaWebView {
@@ -35,18 +34,20 @@ impl LuaUserData for LuaWebView {
 
 // LuaWebViewConfig
 pub struct LuaWebViewConfig {
-    pub init_script: Result<String, LuaError>,
+    pub init_script: Option<String>,
     pub url: String,
+    pub mimic_input: Option<bool>,
 }
 
 impl<'lua> FromLua<'lua> for LuaWebViewConfig {
     fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
         if let Some(config) = value.as_table() {
             Ok(Self {
-                init_script: config.get("init_script"),
+                init_script: config.get("init_script").ok(),
                 url: config
                     .get("url")
                     .expect("WebViewConfig is missing 'url' property"),
+                mimic_input: config.get("mimic_input").ok(),
             })
         } else {
             Err(LuaError::FromLuaConversionError {
@@ -55,5 +56,35 @@ impl<'lua> FromLua<'lua> for LuaWebViewConfig {
                 message: None,
             })
         }
+    }
+}
+
+// LuaWebViewScript
+pub struct LuaWebViewScript {
+    raw: String,
+}
+
+impl LuaWebViewScript {
+    pub fn new() -> Self {
+        Self { raw: String::new() }
+    }
+
+    pub fn read(self) -> Box<str> {
+        self.raw.as_str().into()
+    }
+
+    pub fn write(&mut self, string: &str) {
+        self.raw += string;
+        self.raw.push(';');
+    }
+
+    pub fn extract_from_option<T>(&mut self, option: Option<T>)
+    where
+        T: AsRef<str> + std::default::Default,
+    {
+        let binding = option.unwrap_or_default();
+        let string = binding.as_ref();
+        self.raw += string;
+        self.raw.push(';');
     }
 }

@@ -1,8 +1,16 @@
 use crate::lune::util::TableBuilder;
 use mlua::prelude::*;
+use serde::Deserialize;
+
+// LuaDimension
+#[derive(Deserialize, Default, Debug)]
+pub struct LuaDimension {
+    pub x: f64,
+    pub y: f64,
+}
 
 // EventLoopMessage
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum EventLoopMessage {
     CloseRequested,
     MouseButtton(String, bool),

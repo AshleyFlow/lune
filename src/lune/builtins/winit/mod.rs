@@ -35,7 +35,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
 }
 
 thread_local! {
-    pub static EVENT_LOOP: RefCell<EventLoop<()>> = RefCell::new(EventLoopBuilder::new().build());
+    pub static EVENT_LOOP: RefCell<EventLoop<(WindowId, EventLoopMessage)>> = RefCell::new(EventLoopBuilder::with_user_event().build());
 }
 
 pub fn winit_create_window<'lua>(
@@ -64,6 +64,9 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                     *flow = tao::event_loop::ControlFlow::Exit;
 
                     match event {
+                        tao::event::Event::UserEvent((window_id, msg)) => {
+                            message = (Some(window_id), msg);
+                        }
                         tao::event::Event::WindowEvent {
                             window_id,
                             event: tao::event::WindowEvent::CloseRequested,

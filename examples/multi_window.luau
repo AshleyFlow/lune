@@ -20,9 +20,9 @@ handle2 = winit.event_loop(window2, function(msg)
 end)
 
 local init_script = [[
-	document.addEventListener('DOMContentLoaded', function() {
+	window.onload = () => {
 		document.body.style.transform = 'translateX(250px)'
-	})
+	}
 ]]
 
 local webview = winit.create_webview(window2, {

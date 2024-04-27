@@ -76,7 +76,6 @@ pathdiff = "0.2"
 bstr = "1.9.1"
 pin-project = "1.0"
 urlencoding = "2.1"
-bstr = "1.9"
 regex = "1.10"
 self_cell = "1.0"
 
@@ -94,7 +93,6 @@ mlua = { version = "0.9.7", features = [
     "luau-jit",
     "async",
     "serialize",
-    "macros"
 ] }
 
 ### SERDE

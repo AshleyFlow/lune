@@ -91,7 +91,7 @@ export type WebViewConfig = {
 
 		### Warning !
 
-		putting more than one header will result in error while using custom protocol
+		putting more than one header will error
 	]=]
 	headers: { [string]: string }?,
 	custom_protocol_name: string?,

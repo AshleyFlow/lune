@@ -1,6 +1,7 @@
 mod table_builder;
 
 pub mod formatting;
+pub mod http;
 pub mod luaurc;
 pub mod paths;
 pub mod traits;

@@ -1,7 +1,8 @@
 use crate::lune::{
     builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat},
-    util::TableBuilder,
+    util::{http::lua_table_to_headers, TableBuilder},
 };
+use http::HeaderMap;
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use std::{rc::Weak, time::Duration};
@@ -105,6 +106,7 @@ pub struct LuaWebViewConfig {
     pub init_script: Option<String>,
     pub html: Option<String>,
     pub url: Option<String>,
+    pub headers: HeaderMap,
     pub custom_protocol_name: Option<String>,
     pub custom_protocol_handler: Option<LuaRegistryKey>,
 }
@@ -123,6 +125,7 @@ impl<'lua> FromLua<'lua> for LuaWebViewConfig {
                 init_script: config.get("init_script").ok(),
                 html: config.get("html").ok(),
                 url: config.get("url").ok(),
+                headers: lua_table_to_headers(config.get("headers").ok(), lua)?,
                 custom_protocol_name: config.get("custom_protocol_name").ok(),
                 custom_protocol_handler,
             })

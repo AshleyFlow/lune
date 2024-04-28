@@ -1,48 +1,8 @@
+local http = require("http")
+
 export type Dimension = {
 	x: number,
 	y: number,
-}
-
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH"
-
---[=[
-	@interface ServeRequest
-	@within Net
-
-	Data type for requests in `net.serve`.
-
-	This is a dictionary containing the following values:
-
-	* `path` - The path being requested, relative to the root. Will be `/` if not specified
-	* `query` - A table of key-value pairs representing query parameters in the request path
-	* `method` - The HTTP method verb, such as `"GET"`, `"POST"`, `"PATCH"`, `"PUT"`, or `"DELETE"`. Will always be uppercase
-	* `headers` - A table of key-value pairs representing headers
-	* `body` - The request body, or an empty string if one was not given
-]=]
-export type ServeRequest = {
-	path: string,
-	query: { [string]: string? },
-	method: HttpMethod,
-	headers: { [string]: string },
-	body: string,
-}
-
---[=[
-	@interface ServeResponse
-	@within Net
-
-	Response type for requests in `net.serve`.
-
-	This is a dictionary that may contain one or more of the following values:
-
-	* `status` - The status code for the request, in the range `100` -> `599`
-	* `headers` - A table of key-value pairs representing headers
-	* `body` - The response body
-]=]
-export type ServeResponse = {
-	status: number?,
-	headers: { [string]: string }?,
-	body: (string | buffer)?,
 }
 
 --[=[
@@ -119,10 +79,23 @@ export type WebView = {
 ]=]
 export type WebViewConfig = {
 	init_script: string?,
+
+	--[=[
+		Content of an html file
+	]=]
 	html: string?,
 	url: string?,
+
+	--[=[
+		Headers used when loading `url`
+
+		### Warning !
+
+		putting more than one header will result in error while using custom protocol
+	]=]
+	headers: { [string]: string }?,
 	custom_protocol_name: string?,
-	custom_protocol_handler: ((request: ServeRequest) -> ServeResponse | string)?,
+	custom_protocol_handler: http.ServeHttpHandler?,
 }
 
 --[=[
@@ -160,10 +133,6 @@ export type WindowEventLoopHandle = {
 
 	A collection of the Window Events that are received from the event loop
 	
-	### Warning
-
-	Input related events are not supported for Windows containing a WebView, this is due to how Browsers work
-
 	* `CloseRequested`
 	* `MouseButton`
 	* `KeyCode`

@@ -11,9 +11,9 @@ use hyper_tungstenite::{is_upgrade_request, upgrade};
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 
-use super::{
-    super::websocket::NetWebSocket, keys::SvcKeys, request::LuaRequest, response::LuaResponse,
-};
+use crate::lune::util::http::{request::LuaRequest, response::LuaResponse};
+
+use super::{super::websocket::NetWebSocket, keys::SvcKeys};
 
 #[derive(Debug, Clone)]
 pub(super) struct Svc {
@@ -61,11 +61,7 @@ impl Service<Request<Incoming>> for Svc {
                 let body = body.collect().await.into_lua_err()?;
                 let body = body.to_bytes().to_vec();
 
-                let lua_req = LuaRequest {
-                    _remote_addr: addr,
-                    head,
-                    body,
-                };
+                let lua_req = LuaRequest { head, body };
                 let lua_req_table = lua_req.into_lua_table(&lua)?;
 
                 let thread_id = lua.push_thread_back(handler_request, lua_req_table)?;
@@ -75,7 +71,7 @@ impl Service<Request<Incoming>> for Svc {
                     .get_thread_result(thread_id)
                     .expect("Missing handler thread result")?;
 
-                LuaResponse::from_lua_multi(thread_res, &lua)?.into_response()
+                LuaResponse::from_lua_multi(thread_res, &lua)?.into_response1()
             })
         }
     }

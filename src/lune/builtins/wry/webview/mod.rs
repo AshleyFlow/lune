@@ -1,15 +1,12 @@
 pub mod config;
 pub mod input;
-mod request;
-mod response;
 
 use self::{
     config::{LuaWebView, LuaWebViewConfig, LuaWebViewScript},
     input::{config::LuaWebViewMessage, JAVASCRIPT_API},
-    request::LuaRequest,
-    response::LuaResponse,
 };
 use super::{window::config::LuaWindow, EVENT_LOOP};
+use crate::lune::util::http::{request::LuaRequest, response::LuaResponse};
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use std::rc::{Rc, Weak};
@@ -26,6 +23,7 @@ pub fn create<'lua>(
 
     if let Some(window) = field1.as_userdata() {
         let mut window = window.borrow_mut::<LuaWindow>()?;
+
         let mut webview_builder = WebViewBuilder::new(&window.window);
 
         let mut init_script = LuaWebViewScript::new();
@@ -35,7 +33,7 @@ pub fn create<'lua>(
         if let Some(html) = config.html {
             webview_builder = webview_builder.with_html(html);
         } else if let Some(url) = config.url {
-            webview_builder = webview_builder.with_url(url);
+            webview_builder = webview_builder.with_url_and_headers(url, config.headers);
         }
 
         let incomplete_custom_protocol_config = {
@@ -89,7 +87,7 @@ pub fn create<'lua>(
                         let lua_res =
                             LuaResponse::from_lua_multi(lua_res_table, &outter_lua).unwrap();
 
-                        responder.respond(lua_res.into_response().unwrap());
+                        responder.respond(lua_res.into_response2().unwrap());
                     });
                 },
             );

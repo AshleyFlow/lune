@@ -1,16 +1,18 @@
 local wry = require("@luneweb/wry")
 local window, handle = wry.create_window({}), nil
 
-local webview = wry.create_webview(window, {
+wry.create_webview(window, {
 	custom_protocol_name = "lune",
-	custom_protocol_handler = function(request)
-		if request.path == "/home" then
-			return "Welcome!"
-		end
+	custom_protocol_handler = function(req)
+		print(req.headers.print, req.headers.time)
 
-		return "Hello, World!"
+		return "Hello!"
 	end,
-	url = "http://lune.app/home",
+	url = "http://lune.app/",
+	headers = {
+		print = "Hey!",
+		time = tostring(os.clock())
+	}
 })
 
 handle = wry.event_loop(window, function(msg)
@@ -21,7 +23,3 @@ handle = wry.event_loop(window, function(msg)
 end)
 
 wry.run()
-
-require("@luneweb/task").delay(1, function()
-	webview:load_url("http://lune.app/")
-end)

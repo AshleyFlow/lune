@@ -15,8 +15,6 @@ use crate::lune::util::TableBuilder;
 use super::config::ServeConfig;
 
 mod keys;
-mod request;
-mod response;
 mod service;
 
 use keys::SvcKeys;

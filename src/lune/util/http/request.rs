@@ -1,15 +1,11 @@
-use std::{collections::HashMap, net::SocketAddr};
-
-use http::request::Parts;
-
-use mlua::prelude::*;
-
 use crate::lune::util::TableBuilder;
+use http::request::Parts;
+use mlua::prelude::*;
+use std::collections::HashMap;
 
-pub(super) struct LuaRequest {
-    pub(super) _remote_addr: SocketAddr,
-    pub(super) head: Parts,
-    pub(super) body: Vec<u8>,
+pub struct LuaRequest {
+    pub head: Parts,
+    pub body: Vec<u8>,
 }
 
 impl LuaRequest {

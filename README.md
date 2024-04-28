@@ -25,5 +25,6 @@ Head over to the [Installation](https://lune-org.github.io/docs/getting-started/
 
 Once you feel confident enough, you can check out the example script in the examples directory.
 
-----
+---
+
 Don't forget to use `luneweb` instead of `lune` when you want to use the CLI.

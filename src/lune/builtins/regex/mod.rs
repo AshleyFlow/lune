@@ -1,37 +1,21 @@
-mod config;
+#![allow(clippy::module_inception)]
 
-use crate::lune::util::TableBuilder;
 use mlua::prelude::*;
 
-use self::config::LuaRegex;
+use crate::lune::util::TableBuilder;
 
-const REGEX_IMPL_LUA: &str = r#"
-return freeze({
-    match = function(...)
-		return regex:match(...)
-	end
-})
-"#;
+mod captures;
+mod matches;
+mod regex;
+
+use self::regex::LuaRegex;
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
     TableBuilder::new(lua)?
-        .with_function("new", |lua, pattern: LuaString| {
-            let lib = LuaRegex::new(pattern.to_string_lossy().to_string());
-
-            let table_freeze = lua
-                .globals()
-                .get::<_, LuaTable>("table")?
-                .get::<_, LuaFunction>("freeze")?;
-
-            let env = TableBuilder::new(lua)?
-                .with_value("regex", lib)?
-                .with_value("freeze", table_freeze)?
-                .build_readonly()?;
-
-            lua.load(REGEX_IMPL_LUA)
-                .set_name("regex")
-                .set_environment(env)
-                .eval::<LuaTable>()
-        })?
+        .with_function("new", new_regex)?
         .build_readonly()
+}
+
+fn new_regex(_: &Lua, pattern: String) -> LuaResult<LuaRegex> {
+    LuaRegex::new(pattern)
 }

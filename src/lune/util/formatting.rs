@@ -470,7 +470,7 @@ fn call_userdata_tostring_metamethod<'a>(tab: &'a LuaAnyUserData<'a>) -> Option<
             Err(_) => None,
         },
     }?;
-    match f.call::<_, String>(()) {
+    match f.call::<_, String>(tab) {
         Ok(res) => Some(res),
         Err(_) => None,
     }

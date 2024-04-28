@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[839],{63891:e=>{e.exports=JSON.parse('{"sourceUrl":"https://github.com/HighFlowey/luneweb/blob/master","baseUrl":"/luneweb/","classOrder":[],"apiCategories":[]}')}}]);

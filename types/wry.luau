@@ -160,10 +160,6 @@ export type WindowEventLoopHandle = {
 
 	A collection of the Window Events that are received from the event loop
 	
-	### Warning
-
-	Input related events are not supported for Windows containing a WebView, this is due to how Browsers work
-
 	* `CloseRequested`
 	* `MouseButton`
 	* `KeyCode`

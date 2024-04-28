@@ -110,6 +110,7 @@ export type WebView = {
 	]=]
 	evaluate: (self: WebView, javascript: string) -> unknown,
 	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
+	load_url: (self: WebView, url: string) -> (),
 }
 
 --[=[

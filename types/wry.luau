@@ -71,6 +71,13 @@ export type WebView = {
 	evaluate: (self: WebView, javascript: string) -> unknown,
 	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
 	load_url: (self: WebView, url: string) -> (),
+
+	--[=[
+		### Limitations
+
+		having more than one header will error
+	]=]
+	load_url_with_headers: (self: WebView, url: string, headers: { [string]: string }) -> (),
 }
 
 --[=[
@@ -89,9 +96,9 @@ export type WebViewConfig = {
 	--[=[
 		Headers used when loading `url`
 
-		### Warning !
+		### Limitations
 
-		putting more than one header will error
+		having more than one header will error
 	]=]
 	headers: { [string]: string }?,
 	custom_protocol_name: string?,

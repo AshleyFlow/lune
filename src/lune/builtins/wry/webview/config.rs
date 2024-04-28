@@ -98,6 +98,15 @@ impl LuaUserData for LuaWebView {
         methods.add_method("load_url", |_lua: &Lua, this: &Self, url: String| {
             this.webview.load_url(url.as_str()).into_lua_err()
         });
+
+        methods.add_method(
+            "load_url_with_headers",
+            |lua: &Lua, this: &Self, (url, headers): (String, LuaTable)| {
+                this.webview
+                    .load_url_with_headers(url.as_str(), lua_table_to_headers(Some(headers), lua)?)
+                    .into_lua_err()
+            },
+        );
     }
 }
 

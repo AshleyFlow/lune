@@ -19,7 +19,7 @@ pub fn lua_table_to_headers<'lua>(
             let (h, v) = pair?;
             let name = HeaderName::from_str(&h).into_lua_err()?;
             let value = HeaderValue::from_bytes(v.as_bytes()).into_lua_err()?;
-            headers_map.insert(name, value);
+            headers_map.append(name, value);
         }
     }
 

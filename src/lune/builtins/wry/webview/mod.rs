@@ -11,6 +11,7 @@ use self::{
 };
 use super::{window::config::LuaWindow, EVENT_LOOP};
 use mlua::prelude::*;
+use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use std::rc::{Rc, Weak};
 use wry::WebViewBuilder;
 
@@ -47,7 +48,7 @@ pub fn create<'lua>(
         }
 
         if let Some(custom_protocol_name) = config.custom_protocol_name {
-            let custom_protocol_thread_key = config.custom_protocol_handler.unwrap();
+            let custom_protocol_fn_key = Rc::new(config.custom_protocol_handler.unwrap());
 
             let inner_lua = lua
                 .app_data_ref::<Weak<Lua>>()
@@ -55,22 +56,43 @@ pub fn create<'lua>(
                 .upgrade()
                 .expect("Lua was dropped unexpectedly");
 
-            webview_builder =
-                webview_builder.with_custom_protocol(custom_protocol_name, move |request| {
-                    let custom_protocol_handler = inner_lua
-                        .registry_value::<LuaFunction>(&custom_protocol_thread_key)
-                        .unwrap();
+            webview_builder = webview_builder.with_asynchronous_custom_protocol(
+                custom_protocol_name,
+                move |request, responder| {
+                    let outter_lua = inner_lua
+                        .app_data_ref::<Weak<Lua>>()
+                        .expect("Missing weak lua ref")
+                        .upgrade()
+                        .expect("Lua was dropped unexpectedly");
 
-                    let (head, body) = request.into_parts();
-                    let lua_req = LuaRequest { head, body };
+                    let custom_protocol_fn_key = custom_protocol_fn_key.clone();
 
-                    let lua_req_table = lua_req.into_lua_table(&inner_lua).unwrap();
-                    let res = custom_protocol_handler
-                        .call::<_, LuaResponse>(lua_req_table)
-                        .unwrap();
+                    inner_lua.as_ref().spawn_local(async move {
+                        let (head, body) = request.into_parts();
+                        let lua_req = LuaRequest { head, body };
 
-                    res.into_response().unwrap()
-                });
+                        let lua = outter_lua.as_ref();
+                        let lua_req_table = lua_req.into_lua_table(&outter_lua).unwrap();
+
+                        let custom_protocol_fn = lua
+                            .registry_value::<LuaFunction>(&custom_protocol_fn_key)
+                            .unwrap();
+
+                        let thread = lua.create_thread(custom_protocol_fn).unwrap();
+                        let thread_id = lua.push_thread_back(thread, lua_req_table).unwrap();
+
+                        lua.track_thread(thread_id);
+                        lua.wait_for_thread(thread_id).await;
+
+                        let lua_res_table =
+                            outter_lua.get_thread_result(thread_id).unwrap().unwrap();
+                        let lua_res =
+                            LuaResponse::from_lua_multi(lua_res_table, &outter_lua).unwrap();
+
+                        responder.respond(lua_res.into_response().unwrap());
+                    });
+                },
+            );
         }
 
         let window_id = window.window.id();

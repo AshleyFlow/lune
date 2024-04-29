@@ -76,10 +76,13 @@ pub fn create<'lua>(
 
                         let lua_res_table =
                             outter_lua.get_thread_result(thread_id).unwrap().unwrap();
-                        let lua_res =
-                            LuaResponse::from_lua_multi(lua_res_table, &outter_lua).unwrap();
+                        let lua_res = LuaResponse::from_lua_multi(lua_res_table, &outter_lua);
 
-                        responder.respond(lua_res.into_response2().unwrap());
+                        if let Ok(lua_res) = lua_res {
+                            responder.respond(lua_res.into_response2().unwrap());
+                        } else {
+                            panic!("Couldn't get lua response from custom_protocol")
+                        }
                     });
                 },
             );

@@ -24,9 +24,12 @@ LuneWeb adds built-in libraries for creating cross-platform web applications to 
 LuneWeb does not provide a library for creating UI elements directly, but it does include a method for running javascript code through webviews, so you can create UI elements like this:
 
 ```lua
-local function label(text: string)
+local serde = require("@luneweb/serde")
+
+local function label(value: string)
+    local js_value = serde.encode("json", value)
     local code = "let element = document.createElement('h1');"
-    code ..= `element.innerHTML = {text};`
+    code ..= `element.innerHTML = {js_value};`
     code ..= "document.body.appendChild(element);"
     webview:evaluate(code)
 end

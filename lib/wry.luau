@@ -72,6 +72,7 @@
 --[=[
 	@interface WebViewConfig
 	@within Wry
+	.with_devtools boolean?
 	.init_script string?
 	.html string?
 	.url string?

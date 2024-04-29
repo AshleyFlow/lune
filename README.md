@@ -15,16 +15,27 @@
 
 <br/>
 
-A standalone [Luau](https://luau-lang.org) runtime.
+## LuneWeb
 
-This fork adds builtin libraries for creating web applications to [Lune](https://github.com/lune-org/lune).
+LuneWeb adds built-in libraries for creating cross-platform web applications to Lune
 
-## Where do I start?
+## Not a UI library, But
 
-Head over to the [Installation](https://lune-org.github.io/docs/getting-started/1-installation) page to learn a bit about how to use Lune!
+LuneWeb does not provide a library for creating UI elements directly, but it does include a method for running javascript code through webviews, so you can create UI elements like this:
 
-Once you feel confident enough, you can check out the example script in the examples directory, and read our [documentation](https://highflowey.github.io/luneweb/).
+```lua
+local function label(text: string)
+    local code = "let element = document.createElement('h1');"
+    code ..= `element.innerHTML = {text};`
+    code ..= "document.body.appendChild(element);"
+    webview:evaluate(code)
+end
 
----
+label("Hello, Lune!")
+```
 
-Don't forget to use `luneweb` instead of `lune` when you want to use the CLI.
+## Documentation
+
+### Documentation for Lune: [Lune](https://lune-org.github.io/docs/)
+
+### Documentation for LuneWeb's additions to Lune: [LuneWeb](https://highflowey.github.io/luneweb/)

@@ -32,6 +32,7 @@
 ]=]
 
 --[=[
+	@readonly
 	@prop size Dimension
 	@within Window
 

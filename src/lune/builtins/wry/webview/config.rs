@@ -16,6 +16,13 @@ pub struct LuaWebView {
 
 impl LuaUserData for LuaWebView {
     fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method(
+            "evaluate_noresult",
+            |_lua: &Lua, this: &Self, script: String| {
+                this.webview.evaluate_script(script.as_str()).into_lua_err()
+            },
+        );
+
         methods.add_async_method(
             "evaluate",
             |lua: &Lua, this: &Self, script: String| async move {

@@ -28,11 +28,25 @@
 ]=]
 
 --[=[
+	@method evaluate_noresult
+	@within WebView
+
+	Similar to `WebView:evaluate(...)`, but does not yield to return results
+	
+	### Use Cases
+	* Just wanting to run code through webview without wanting the last statement to be returned as lua value
+	* Wanting to run code while `WebView` is getting response from a url to load a page (using evaluate in that case will yield forever unless you do it inside a new task, e.g. task.spawn(...))
+]=]
+
+--[=[
 	@yields
 	@method evaluate
 	@within WebView
 
 	Runs the provided javascript code through the webview and returns the last statement as a lua value
+
+	### Bug(s)
+	* Will yield forever if you run it while `WebView` is getting response from a url to load a page, unless you do it inside task.spawn(...) or use `WebView:evaluate_noresult(...)` instead
 
 	### Example
 

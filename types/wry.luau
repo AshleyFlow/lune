@@ -19,6 +19,7 @@ export type WindowConfig = {
 }
 
 export type WebView = {
+	evaluate_noresult: (self: WebView, javascript: string) -> (),
 	evaluate: (self: WebView, javascript: string) -> unknown,
 	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
 	load_url: (self: WebView, url: string) -> (),

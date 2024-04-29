@@ -92,10 +92,12 @@
 	.keycode string?
 	.pressed boolean?
 	.position Dimension?
+]=]
 
-	@tag Enum
-
-	Can be compared to `Wry.events`
+--[=[
+	@readonly
+	@prop events { CloseRequested: WindowEvent, MouseButton: WindowEvent, KeyCode: WindowEvent, CursorMoved: WindowEvent, None: WindowEvent }
+	@within Wry
 
 	## Example
 
@@ -106,12 +108,6 @@
 		end
 	end
 	```
-]=]
-
---[=[
-	@readonly
-	@prop events { CloseRequested: WindowEvent, MouseButton: WindowEvent, KeyCode: WindowEvent, CursorMoved: WindowEvent, None: WindowEvent }
-	@within Wry
 ]=]
 
 --[=[

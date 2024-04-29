@@ -5,14 +5,15 @@
 
 	```lua
 	local webview = Wry.create_webview(window, {
-		custom_protocol_name = "lune",
-		custom_protocol_handler = function(request)
-			if request.path == "/print" then
-				print("Hello, Lune!")
-			end
+		custom_protocols = {
+			lune = function(request)
+				if request.path == "/print" then
+					print("Hello, Lune!")
+				end
 
-			return "Hello, Lune!"
-		end,
+				return "Hello, Lune!"
+			end,
+		},
 		url = "http://lune.app/"
 	})
 

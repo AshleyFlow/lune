@@ -30,8 +30,7 @@ export type WebViewConfig = {
 	html: string?,
 	url: string?,
 	headers: { [string]: string }?,
-	custom_protocol_name: string?,
-	custom_protocol_handler: http.ServeHttpHandler?,
+	custom_protocols: { [string]: http.ServeHttpHandler }?,
 }
 
 export type WindowEvent = {

@@ -1,17 +1,27 @@
 local wry = require("@luneweb/wry")
 local window, handle = wry.create_window({}), nil
 
-wry.create_webview(window, {
-	custom_protocol_name = "lune",
-	custom_protocol_handler = function(_req)
-		return {
-			body = "Hey!",
-			headers = {
-				["Access-Control-Allow-Origin"] = "*",
-				["Access-Control-Allow-Headers"] = "*",
-			},
-		}
-	end,
+local webview = wry.create_webview(window, {
+	custom_protocols = {
+		lune = function(_req)
+			return {
+				body = "Hey (1)!",
+				headers = {
+					["Access-Control-Allow-Origin"] = "*",
+					["Access-Control-Allow-Headers"] = "*",
+				},
+			}
+		end,
+		luneweb = function(_req)
+			return {
+				body = "Hey (2)!",
+				headers = {
+					["Access-Control-Allow-Origin"] = "*",
+					["Access-Control-Allow-Headers"] = "*",
+				},
+			}
+		end,
+	},
 	url = "http://lune.app/",
 })
 
@@ -23,3 +33,7 @@ handle = wry.event_loop(window, function(msg)
 end)
 
 wry.run()
+
+require("@luneweb/task").wait(2)
+
+webview:load_url("http://luneweb.app/")

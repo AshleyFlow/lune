@@ -36,23 +36,14 @@ pub fn create<'lua>(
             webview_builder = webview_builder.with_url_and_headers(url, config.headers);
         }
 
-        let incomplete_custom_protocol_config = {
-            (config.custom_protocol_name.is_some() & config.custom_protocol_handler.is_none())
-                | (config.custom_protocol_name.is_none() & config.custom_protocol_handler.is_some())
-        };
-
-        if incomplete_custom_protocol_config {
-            return Err(LuaError::RuntimeError("config for custom_protocol is incomplete, both custom_protocol_name and custom_protocol_handler must be present".into()));
-        }
-
-        if let Some(custom_protocol_name) = config.custom_protocol_name {
-            let custom_protocol_fn_key = Rc::new(config.custom_protocol_handler.unwrap());
-
+        for (custom_protocol_name, custom_protocol_fn_key) in config.custom_protocols {
             let inner_lua = lua
                 .app_data_ref::<Weak<Lua>>()
                 .expect("Missing weak lua ref")
                 .upgrade()
                 .expect("Lua was dropped unexpectedly");
+
+            let custom_protocol_fn_key = Rc::new(custom_protocol_fn_key);
 
             webview_builder = webview_builder.with_asynchronous_custom_protocol(
                 custom_protocol_name,

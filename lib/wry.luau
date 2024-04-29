@@ -14,14 +14,9 @@
 		title = "Hello, Lune!"
 	})
 
-	Wry.create_webview(window, {
-		html = "<h1>Hello, Lune!</h1>"
-	})
-
 	local handle
 	handle = Wry.event_loop(window, function(msg)
 		if msg == Wry.events.CloseRequested then
-			window:close()
 			handle.stop()
 		end
 	end)
@@ -51,6 +46,14 @@
 
 	@param config WindowConfig
 	@return Window
+
+	## Example
+
+	```lua
+	local window = Wry.create_window({
+		title = "Hello, Lune!"
+	})
+	```
 ]=]
 
 --[=[
@@ -73,8 +76,7 @@
 	.html string?
 	.url string?
 	.headers WebViewHeaders? -- ! having more than 1 header value will error
-	.custom_protocol_name string?
-	.custom_protocol_handler HttpHandler?
+	.custom_protocols { [string]: HttpHandler }?
 ]=]
 
 --[=[
@@ -83,6 +85,14 @@
 
 	@param config WebViewConfig
 	@return WebView
+
+	## Example
+
+	```lua
+	Wry.create_webview(window, {
+		html = "<h1>Hello, Lune!</h1>"
+	})
+	```
 ]=]
 
 --[=[

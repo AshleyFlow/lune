@@ -5,7 +5,7 @@ use crate::lune::{
 use http::HeaderMap;
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
-use std::{rc::Weak, time::Duration};
+use std::{collections::HashMap, rc::Weak, time::Duration};
 use wry::WebView;
 
 // LuaWebView
@@ -116,27 +116,18 @@ pub struct LuaWebViewConfig {
     pub html: Option<String>,
     pub url: Option<String>,
     pub headers: HeaderMap,
-    pub custom_protocol_name: Option<String>,
-    pub custom_protocol_handler: Option<LuaRegistryKey>,
+    pub custom_protocols: HashMap<String, LuaRegistryKey>,
 }
 
 impl<'lua> FromLua<'lua> for LuaWebViewConfig {
     fn from_lua(value: LuaValue<'lua>, lua: &'lua Lua) -> LuaResult<Self> {
         if let Some(config) = value.as_table() {
-            let custom_protocol_handler =
-                if let Ok(handler) = config.get::<_, LuaFunction>("custom_protocol_handler") {
-                    Some(lua.create_registry_value(handler)?)
-                } else {
-                    None
-                };
-
             Ok(Self {
                 init_script: config.get("init_script").ok(),
                 html: config.get("html").ok(),
                 url: config.get("url").ok(),
                 headers: lua_table_to_headers(config.get("headers").ok(), lua)?,
-                custom_protocol_name: config.get("custom_protocol_name").ok(),
-                custom_protocol_handler,
+                custom_protocols: config.get("custom_protocols").unwrap_or_default(),
             })
         } else {
             Err(LuaError::FromLuaConversionError {

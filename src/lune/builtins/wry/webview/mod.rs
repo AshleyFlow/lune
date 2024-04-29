@@ -24,7 +24,8 @@ pub fn create<'lua>(
     if let Some(window) = field1.as_userdata() {
         let mut window = window.borrow_mut::<LuaWindow>()?;
 
-        let mut webview_builder = WebViewBuilder::new(&window.window);
+        let mut webview_builder =
+            WebViewBuilder::new(&window.window).with_devtools(config.with_devtools);
 
         let mut init_script = LuaWebViewScript::new();
         init_script.write(JAVASCRIPT_API);

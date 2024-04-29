@@ -112,6 +112,7 @@ impl LuaUserData for LuaWebView {
 
 // LuaWebViewConfig
 pub struct LuaWebViewConfig {
+    pub with_devtools: bool,
     pub init_script: Option<String>,
     pub html: Option<String>,
     pub url: Option<String>,
@@ -123,6 +124,7 @@ impl<'lua> FromLua<'lua> for LuaWebViewConfig {
     fn from_lua(value: LuaValue<'lua>, lua: &'lua Lua) -> LuaResult<Self> {
         if let Some(config) = value.as_table() {
             Ok(Self {
+                with_devtools: config.get("with_devtools").unwrap_or(false),
                 init_script: config.get("init_script").ok(),
                 html: config.get("html").ok(),
                 url: config.get("url").ok(),

@@ -26,6 +26,7 @@ export type WebView = {
 }
 
 export type WebViewConfig = {
+	with_devtools: boolean?,
 	init_script: string?,
 	html: string?,
 	url: string?,

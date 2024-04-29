@@ -28,8 +28,8 @@ handle = Wry.event_loop(window, function(msg)
 	end
 end)
 ```"><link data-rh="true" rel="canonical" href="https://HighFlowey.github.io/luneweb/api/Window"><link data-rh="true" rel="alternate" href="https://HighFlowey.github.io/luneweb/api/Window" hreflang="en"><link data-rh="true" rel="alternate" href="https://HighFlowey.github.io/luneweb/api/Window" hreflang="x-default"><link rel="stylesheet" href="/luneweb/assets/css/styles.19a5646f.css">
-<link rel="preload" href="/luneweb/assets/js/runtime~main.69c69c8e.js" as="script">
-<link rel="preload" href="/luneweb/assets/js/main.f12e4d70.js" as="script">
+<link rel="preload" href="/luneweb/assets/js/runtime~main.5db61341.js" as="script">
+<link rel="preload" href="/luneweb/assets/js/main.53181768.js" as="script">
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
@@ -47,7 +47,7 @@ handle <span class="token operator">=</span> Wry<span class="token punctuation">
 </code></pre>
 </div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="webview"><code style="text-decoration:none">webview</code><a href="#webview" class="hash-link" aria-label="Direct link to webview" title="Direct link to webview">​</a></h3><span class="badge_Ba2I" style="color:#e74c3c"><span class="badgeTooltip_cWXP">This item is read only and cannot be modified.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" height="300px" width="300px" fill="#e74c3c" x="0px" y="0px" viewBox="0 0 96 96"><path d="M70.354,15.662h-7.496H25.566c-3.282,0-5.19-0.776-5.728-1.169v-1.456c0.538-0.393,2.445-1.168,5.728-1.168h46.479V8H25.566  c-4.776,0-9.594,1.468-9.594,4.747v61.458C15.972,86.645,20.328,88,37.495,88h42.535V15.662H70.354z"></path></svg> <!-- -->Read Only</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/window.luau#L33"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Window<!-- -->.<!-- -->webview<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/WebView">WebView?</a></code></div><div>
 <p>This property keeps the attached webview from being garbage collected</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="size"><code style="text-decoration:none">size</code><a href="#size" class="hash-link" aria-label="Direct link to size" title="Direct link to size">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/window.luau#L46"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Window<!-- -->.<!-- -->size<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/Wry#Dimension">Dimension</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="size"><code style="text-decoration:none">size</code><a href="#size" class="hash-link" aria-label="Direct link to size" title="Direct link to size">​</a></h3><span class="badge_Ba2I" style="color:#e74c3c"><span class="badgeTooltip_cWXP">This item is read only and cannot be modified.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" height="300px" width="300px" fill="#e74c3c" x="0px" y="0px" viewBox="0 0 96 96"><path d="M70.354,15.662h-7.496H25.566c-3.282,0-5.19-0.776-5.728-1.169v-1.456c0.538-0.393,2.445-1.168,5.728-1.168h46.479V8H25.566  c-4.776,0-9.594,1.468-9.594,4.747v61.458C15.972,86.645,20.328,88,37.495,88h42.535V15.662H70.354z"></path></svg> <!-- -->Read Only</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/window.luau#L47"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Window<!-- -->.<!-- -->size<!-- -->:<!-- --> </code> <code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/Wry#Dimension">Dimension</a></code></div><div>
 <ul>
   <li>Does not account for elements in the webview</li>
 </ul>
@@ -85,8 +85,9 @@ handle <span class="token operator">=</span> Wry<span class="token punctuation">
             &quot;name&quot;: &quot;size&quot;,
             &quot;desc&quot;: &quot;* Does not account for elements in the webview\n\n## WebView alternative\n\n```lua\nlocal size: Dimension = window.webview:evaluate(\&quot;{ x: window.innerWidth, y: window.innerHeight }\&quot;)\n```&quot;,
             &quot;lua_type&quot;: &quot;Dimension&quot;,
+            &quot;readonly&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 46,
+                &quot;line&quot;: 47,
                 &quot;path&quot;: &quot;lib/window.luau&quot;
             }
         }
@@ -99,7 +100,7 @@ handle <span class="token operator">=</span> Wry<span class="token punctuation">
         &quot;path&quot;: &quot;lib/window.luau&quot;
     }
 }</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#size" class="table-of-contents__link toc-highlight">size</a></li><li><a href="#webview" class="table-of-contents__link toc-highlight">webview</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#close" class="table-of-contents__link toc-highlight">:close</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 HighFlowey. Built with Moonwave and Docusaurus.</div></div></div></footer></div>
-<script src="/luneweb/assets/js/runtime~main.69c69c8e.js"></script>
-<script src="/luneweb/assets/js/main.f12e4d70.js"></script>
+<script src="/luneweb/assets/js/runtime~main.5db61341.js"></script>
+<script src="/luneweb/assets/js/main.53181768.js"></script>
 </body>
 </html>

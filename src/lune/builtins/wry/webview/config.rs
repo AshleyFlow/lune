@@ -30,9 +30,9 @@ impl LuaUserData for LuaWebView {
 
                 this.webview
                     .evaluate_script_with_callback(script.as_str(), move |res| {
-                        result_tx.send(res.clone()).unwrap();
+                        result_tx.send(res.clone()).into_lua_err().unwrap();
                     })
-                    .unwrap();
+                    .into_lua_err()?;
 
                 if result_rx.changed().await.is_ok() {
                     let borrowed = result_rx.borrow_and_update();
@@ -78,12 +78,18 @@ impl LuaUserData for LuaWebView {
                         }
 
                         let message = inner_listener.borrow_and_update().clone();
-                        let thread = inner_lua.create_thread(inner_callback.clone()).unwrap();
+                        let thread = inner_lua
+                            .create_thread(inner_callback.clone())
+                            .into_lua_err()
+                            .unwrap();
                         let config = EncodeDecodeConfig::from(EncodeDecodeFormat::Json);
                         let res = config
                             .deserialize_from_string(&inner_lua, message.into())
                             .unwrap();
-                        inner_lua.push_thread_back(thread, res).unwrap();
+                        inner_lua
+                            .push_thread_back(thread, res)
+                            .into_lua_err()
+                            .unwrap();
 
                         tokio::time::sleep(Duration::ZERO).await;
                     }
@@ -95,7 +101,7 @@ impl LuaUserData for LuaWebView {
                             return Ok(());
                         }
 
-                        shutdown_tx.send(true).unwrap();
+                        shutdown_tx.send(true).into_lua_err()?;
                         Ok(())
                     })?
                     .build_readonly()

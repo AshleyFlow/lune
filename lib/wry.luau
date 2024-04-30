@@ -38,6 +38,7 @@
 	@interface WindowConfig
 	@within Wry
 	.title string?
+	.size Dimension?
 ]=]
 
 --[=[

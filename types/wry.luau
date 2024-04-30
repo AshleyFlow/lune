@@ -16,6 +16,7 @@ export type Window = {
 
 export type WindowConfig = {
 	title: string?,
+	size: Dimension?,
 }
 
 export type WebView = {

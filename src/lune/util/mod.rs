@@ -1,5 +1,6 @@
 mod table_builder;
 
+pub mod connection;
 pub mod formatting;
 pub mod http;
 pub mod luaurc;

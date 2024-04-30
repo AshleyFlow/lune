@@ -2,7 +2,8 @@ mod config;
 mod webview;
 mod window;
 
-use crate::lune::util::TableBuilder;
+use self::{config::EventLoopMessage, window::config::LuaWindow};
+use crate::lune::util::{connection::create_connection_handler, TableBuilder};
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
@@ -12,8 +13,6 @@ use tao::{
     platform::run_return::EventLoopExtRunReturn,
     window::WindowId,
 };
-
-use self::{config::EventLoopMessage, window::config::LuaWindow};
 
 pub static EVENT_LOOP_SENDER: Lazy<
     tokio::sync::watch::Sender<(Option<WindowId>, EventLoopMessage)>,
@@ -238,14 +237,5 @@ pub async fn winit_event_loop<'lua>(
         }
     });
 
-    TableBuilder::new(lua)?
-        .with_function("stop", move |_lua: &Lua, _: ()| {
-            if shutdown_tx.is_closed() {
-                return Ok(());
-            }
-
-            shutdown_tx.send(true).into_lua_err()?;
-            Ok(())
-        })?
-        .build_readonly()
+    create_connection_handler(lua, shutdown_tx)
 }

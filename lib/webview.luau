@@ -22,12 +22,6 @@
 ]=]
 
 --[=[
-	@interface WebViewIPCHandle
-	@within WebView
-	.stop () -> ()
-]=]
-
---[=[
 	@method evaluate_noresult
 	@within WebView
 
@@ -96,7 +90,7 @@
 	```
 
 	@param callback ( message: unknown ) -> void
-	@return WebViewIPCHandle
+	@return Connection
 ]=]
 
 --[=[

@@ -122,9 +122,10 @@
 ]=]
 
 --[=[
-	@interface WindowEventLoopHandle
+	@interface Connection
 	@within Wry
 	.stop () -> ()
+	.is_running () -> boolean
 ]=]
 
 --[=[
@@ -151,7 +152,7 @@
 
 	@param window Window
 	@param callback (WindowEvent) -> ()
-	@return WindowEventLoopHandle
+	@return Connection
 ]=]
 
 --[=[

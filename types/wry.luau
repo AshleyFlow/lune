@@ -22,7 +22,7 @@ export type WebView = {
 	evaluate_noresult: (self: WebView, javascript: string) -> (),
 	evaluate_callback: (self: WebView, javascript: string, callback: (unknown) -> ()) -> (),
 	evaluate: (self: WebView, javascript: string) -> unknown,
-	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
+	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> Connection,
 	load_url: (self: WebView, url: string) -> (),
 	load_url_with_headers: (self: WebView, url: string, headers: { [string]: string }) -> (),
 }
@@ -43,12 +43,9 @@ export type WindowEvent = {
 	position: Dimension?,
 }
 
-export type WebViewIPCHandle = {
+export type Connection = {
 	stop: () -> (),
-}
-
-export type WindowEventLoopHandle = {
-	stop: () -> (),
+	is_running: () -> boolean,
 }
 
 wry.events = {
@@ -59,10 +56,7 @@ wry.events = {
 	None = (nil :: any) :: WindowEvent,
 }
 
-wry.event_loop = function(
-	window: Window,
-	callback: (event: WindowEvent) -> ()
-): WindowEventLoopHandle
+wry.event_loop = function(window: Window, callback: (event: WindowEvent) -> ()): Connection
 	return nil :: any
 end
 

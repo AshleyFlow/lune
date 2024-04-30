@@ -1,6 +1,6 @@
 use crate::lune::{
     builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat},
-    util::{http::lua_table_to_headers, TableBuilder},
+    util::{connection::create_connection_handler, http::lua_table_to_headers},
 };
 use http::HeaderMap;
 use mlua::prelude::*;
@@ -135,16 +135,7 @@ impl LuaUserData for LuaWebView {
                     }
                 });
 
-                TableBuilder::new(lua)?
-                    .with_function("stop", move |_lua: &Lua, _: ()| {
-                        if shutdown_tx.is_closed() {
-                            return Ok(());
-                        }
-
-                        shutdown_tx.send(true).into_lua_err()?;
-                        Ok(())
-                    })?
-                    .build_readonly()
+                create_connection_handler(lua, shutdown_tx)
             },
         );
 

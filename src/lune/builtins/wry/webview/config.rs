@@ -23,6 +23,46 @@ impl LuaUserData for LuaWebView {
             },
         );
 
+        methods.add_method(
+            "evaluate_callback",
+            |lua: &Lua, this: &Self, (script, callback): (String, LuaFunction)| {
+                let (result_tx, mut result_rx) = tokio::sync::watch::channel("null".to_string());
+
+                this.webview
+                    .evaluate_script_with_callback(script.as_str(), move |res| {
+                        result_tx.send(res.clone()).into_lua_err().unwrap();
+                    })
+                    .into_lua_err()?;
+
+                let inner_lua = lua
+                    .app_data_ref::<Weak<Lua>>()
+                    .expect("Missing weak lua ref")
+                    .upgrade()
+                    .expect("Lua was dropped unexpectedly");
+
+                let callback_key = lua.create_registry_value(callback)?;
+
+                lua.spawn_local(async move {
+                    if result_rx.changed().await.is_ok() {
+                        let inner_callback = inner_lua
+                            .registry_value::<LuaFunction>(&callback_key)
+                            .unwrap();
+
+                        let borrowed = result_rx.borrow_and_update();
+                        let config = EncodeDecodeConfig::from(EncodeDecodeFormat::Json);
+                        let result = config
+                            .deserialize_from_string(&inner_lua, borrowed.as_str().into())
+                            .unwrap();
+
+                        let thread = inner_lua.create_thread(inner_callback).unwrap();
+                        inner_lua.push_thread_back(thread, result).unwrap();
+                    }
+                });
+
+                Ok(())
+            },
+        );
+
         methods.add_async_method(
             "evaluate",
             |lua: &Lua, this: &Self, script: String| async move {

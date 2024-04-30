@@ -1,6 +1,7 @@
 use std::{
     net::SocketAddr,
     rc::{Rc, Weak},
+    time::Duration,
 };
 
 use hyper::server::conn::http1;
@@ -76,6 +77,8 @@ pub async fn serve<'lua>(
                     }
                 });
             };
+
+            tokio::time::sleep(Duration::ZERO).await;
 
             // Wait for either a new connection or a shutdown signal
             tokio::select! {

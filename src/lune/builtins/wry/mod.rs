@@ -152,7 +152,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
             });
 
             if !EVENT_LOOP_SENDER.is_closed() {
-                EVENT_LOOP_SENDER.send(message).unwrap();
+                EVENT_LOOP_SENDER.send(message).into_lua_err().unwrap();
             } else {
                 break;
             }
@@ -231,6 +231,7 @@ pub async fn winit_event_loop<'lua>(
             inner_lua
                 .as_ref()
                 .push_thread_back(thread, message.1)
+                .into_lua_err()
                 .unwrap();
 
             tokio::time::sleep(Duration::ZERO).await;
@@ -243,7 +244,7 @@ pub async fn winit_event_loop<'lua>(
                 return Ok(());
             }
 
-            shutdown_tx.send(true).unwrap();
+            shutdown_tx.send(true).into_lua_err()?;
             Ok(())
         })?
         .build_readonly()

@@ -19,6 +19,8 @@ export type WindowConfig = {
 }
 
 export type WebView = {
+	evaluate_noresult: (self: WebView, javascript: string) -> (),
+	evaluate_callback: (self: WebView, javascript: string, callback: (unknown) -> ()) -> (),
 	evaluate: (self: WebView, javascript: string) -> unknown,
 	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
 	load_url: (self: WebView, url: string) -> (),
@@ -26,12 +28,12 @@ export type WebView = {
 }
 
 export type WebViewConfig = {
+	with_devtools: boolean?,
 	init_script: string?,
 	html: string?,
 	url: string?,
 	headers: { [string]: string }?,
-	custom_protocol_name: string?,
-	custom_protocol_handler: http.ServeHttpHandler?,
+	custom_protocols: { [string]: http.ServeHttpHandler }?,
 }
 
 export type WindowEvent = {

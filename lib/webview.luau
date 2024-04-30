@@ -5,14 +5,15 @@
 
 	```lua
 	local webview = Wry.create_webview(window, {
-		custom_protocol_name = "lune",
-		custom_protocol_handler = function(request)
-			if request.path == "/print" then
-				print("Hello, Lune!")
-			end
+		custom_protocols = {
+			lune = function(request)
+				if request.path == "/print" then
+					print("Hello, Lune!")
+				end
 
-			return "Hello, Lune!"
-		end,
+				return "Hello, Lune!"
+			end,
+		},
 		url = "http://lune.app/"
 	})
 
@@ -27,11 +28,33 @@
 ]=]
 
 --[=[
+	@method evaluate_noresult
+	@within WebView
+
+	Similar to `WebView:evaluate(...)`, but does not yield and does not return any result
+
+	@param script string
+]=]
+
+--[=[
+	@method evaluate_callback
+	@within WebView
+
+	Similar to `WebView:evaluate(...)`, but instead of yielding to return result, it passes the result to the callback function
+
+	@param script string
+	@param callback (result: unknown) -> ()
+]=]
+
+--[=[
 	@yields
 	@method evaluate
 	@within WebView
 
 	Runs the provided javascript code through the webview and returns the last statement as a lua value
+
+	### Bug(s)
+	* Will yield forever if you run it while custom protocol is sending response to webview for **loading a page**
 
 	### Example
 

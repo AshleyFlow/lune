@@ -24,7 +24,8 @@ pub fn create<'lua>(
     if let Some(window) = field1.as_userdata() {
         let mut window = window.borrow_mut::<LuaWindow>()?;
 
-        let mut webview_builder = WebViewBuilder::new(&window.window);
+        let mut webview_builder =
+            WebViewBuilder::new(&window.window).with_devtools(config.with_devtools);
 
         let mut init_script = LuaWebViewScript::new();
         init_script.write(JAVASCRIPT_API);
@@ -36,23 +37,14 @@ pub fn create<'lua>(
             webview_builder = webview_builder.with_url_and_headers(url, config.headers);
         }
 
-        let incomplete_custom_protocol_config = {
-            (config.custom_protocol_name.is_some() & config.custom_protocol_handler.is_none())
-                | (config.custom_protocol_name.is_none() & config.custom_protocol_handler.is_some())
-        };
-
-        if incomplete_custom_protocol_config {
-            return Err(LuaError::RuntimeError("config for custom_protocol is incomplete, both custom_protocol_name and custom_protocol_handler must be present".into()));
-        }
-
-        if let Some(custom_protocol_name) = config.custom_protocol_name {
-            let custom_protocol_fn_key = Rc::new(config.custom_protocol_handler.unwrap());
-
+        for (custom_protocol_name, custom_protocol_fn_key) in config.custom_protocols {
             let inner_lua = lua
                 .app_data_ref::<Weak<Lua>>()
                 .expect("Missing weak lua ref")
                 .upgrade()
                 .expect("Lua was dropped unexpectedly");
+
+            let custom_protocol_fn_key = Rc::new(custom_protocol_fn_key);
 
             webview_builder = webview_builder.with_asynchronous_custom_protocol(
                 custom_protocol_name,
@@ -84,10 +76,13 @@ pub fn create<'lua>(
 
                         let lua_res_table =
                             outter_lua.get_thread_result(thread_id).unwrap().unwrap();
-                        let lua_res =
-                            LuaResponse::from_lua_multi(lua_res_table, &outter_lua).unwrap();
+                        let lua_res = LuaResponse::from_lua_multi(lua_res_table, &outter_lua);
 
-                        responder.respond(lua_res.into_response2().unwrap());
+                        if let Ok(lua_res) = lua_res {
+                            responder.respond(lua_res.into_response2().unwrap());
+                        } else {
+                            panic!("Couldn't get lua response from custom_protocol")
+                        }
                     });
                 },
             );

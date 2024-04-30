@@ -38,7 +38,7 @@
 
 	* Does not account for elements in the webview
 
-	## WebView alternative
+	### WebView alternative
 
 	```lua
 	local size: Dimension = window.webview:evaluate("{ x: window.innerWidth, y: window.innerHeight }")

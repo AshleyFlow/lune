@@ -3,42 +3,54 @@
 
 <img align="right" width="250" src="assets/logo/tilt_svg.svg" alt="Lune logo" />
 
-<h1 align="center">Lune WebView</h1>
+<h1 align="center">Lune Web</h1>
 
 <div align="center">
  <div>
-  <a href="https://github.com/HighFlowey/lune-webview/blob/main/LICENSE.txt">
-   <img src="https://img.shields.io/github/license/lune-org/lune.svg?label=License&color=informational" alt="Lune WebView license" />
+  <a href="https://github.com/HighFlowey/luneweb/blob/main/LICENSE.txt">
+   <img src="https://img.shields.io/github/license/lune-org/lune.svg?label=License&color=informational" alt="License" />
   </a>
  </div>
 </div>
 
 <br/>
 
-## LuneWeb
+## Goals
 
-LuneWeb adds built-in libraries for creating cross-platform web applications to Lune
+LuneWeb's goal is to provide users with an api for creating web applications and having full control over them.
 
-## Not a UI library, But
+## UI Framework
 
-LuneWeb does not provide a library for creating UI elements directly, but it does include a method for running javascript code through webviews, so you can create UI elements like this:
+We do not provide any kind of framework for creating UI in Luau, it is up to the developers to create bindings for such things, for example:
 
 ```lua
+-- ! This code is not tested.
 local serde = require("@luneweb/serde")
+local id = 0
 
-local function label(value: string)
-    local js_value = serde.encode("json", value)
-    local code = "let element = document.createElement('h1');"
-    code ..= `element.innerHTML = {js_value};`
-    code ..= "document.body.appendChild(element);"
-    webview:evaluate(code)
+local function title(value: string)
+    local value_js = serde.encode("json", value)
+    local script = {
+        `let el{id} = document.createElement("h1")`,
+        `el{id}.innerHTML = {value_js}`,
+        `document.body.appendChild(el{id})`
+    }
+
+    id += 1
+
+    return table.concat(script, ";")
 end
+```
 
-label("Hello, Lune!")
+```lua
+-- ... after creating a window with a webview
+webview:evaluate_noresult(title("Hello, World!"))
 ```
 
 ## Documentation
 
-### Documentation for Lune: [Lune](https://lune-org.github.io/docs/)
+Documentation for all the built-in libraries that already exist in Lune will be here:
+[Lune's Documentation](https://lune-org.github.io/docs/)
 
-### Documentation for LuneWeb's additions to Lune: [LuneWeb](https://highflowey.github.io/luneweb/)
+Documentation for built-in libraries that are only in this repository will be here:
+[LuneWeb's Documentation](https://highflowey.github.io/luneweb/)

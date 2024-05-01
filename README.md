@@ -54,3 +54,21 @@ Documentation for all the built-in libraries that already exist in Lune will be 
 
 Documentation for built-in libraries that are only in this repository will be here:
 [LuneWeb's Documentation](https://highflowey.github.io/luneweb/)
+
+## Installation
+
+### Aftman
+
+use `aftman add HighFlowey/luneweb@<version> --global` to install luneweb globally on your system (replace \<version> with a valid version, like 0.1.4)
+
+---
+
+### Downloading
+
+Download the executable from [Releases](https://github.com/HighFlowey/luneweb/releases/latest), and add it to PATH
+
+---
+
+### Building
+
+`git clone` this repo and use `cargo build --release` to build an executable, the executable can be found in ./target/release/, now you cann add the executable to PATH

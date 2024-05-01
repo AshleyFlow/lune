@@ -5,10 +5,10 @@ local webview = wry.create_webview(window, {
 })
 
 handle = wry.event_loop(window, function(msg)
-	if msg == wry.events.CloseRequested then
+	if msg.event_type == "CloseRequested" then
 		window:close()
 		handle.stop()
-	elseif msg == wry.events.CursorMoved and msg.position then
+	elseif msg.event_type == "CursorMoved" then
 		local alpha: wry.Dimension = {
 			x = msg.position.x / window.size.x,
 			y = msg.position.y / window.size.y,

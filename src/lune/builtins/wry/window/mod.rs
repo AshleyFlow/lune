@@ -29,7 +29,7 @@ pub fn create<'lua>(
     });
 
     let lua_window = LuaWindow {
-        sender: tokio::sync::watch::Sender::new(super::config::EventLoopMessage::None),
+        sender: tokio::sync::watch::Sender::new(super::config::EventLoopMessage::none()),
         window: window?,
         webview: None,
     };

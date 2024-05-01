@@ -17,15 +17,12 @@ use tao::{
 pub static EVENT_LOOP_SENDER: Lazy<
     tokio::sync::watch::Sender<(Option<WindowId>, EventLoopMessage)>,
 > = Lazy::new(|| {
-    let init = (None, EventLoopMessage::None);
+    let init = (None, EventLoopMessage::none());
     tokio::sync::watch::Sender::new(init)
 });
 
 pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
-    let events = EventLoopMessage::create_lua_table(lua)?;
-
     TableBuilder::new(lua)?
-        .with_value("events", events)?
         .with_async_function("event_loop", winit_event_loop)?
         .with_async_function("run", winit_run)?
         .with_function("create_window", winit_create_window)?
@@ -54,7 +51,8 @@ pub fn winit_create_webview<'lua>(
 pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
     lua.spawn_local(async {
         loop {
-            let mut message: (Option<WindowId>, EventLoopMessage) = (None, EventLoopMessage::None);
+            let mut message: (Option<WindowId>, EventLoopMessage) =
+                (None, EventLoopMessage::none());
 
             EVENT_LOOP.with(|event_loop| {
                 let mut event_loop = event_loop.borrow_mut();
@@ -71,7 +69,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                             event: tao::event::WindowEvent::CloseRequested,
                             ..
                         } => {
-                            message = (Some(window_id), EventLoopMessage::CloseRequested);
+                            message = (Some(window_id), EventLoopMessage::close_requested());
                         }
                         tao::event::Event::WindowEvent {
                             window_id,
@@ -85,7 +83,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                         } => {
                             message = (
                                 Some(window_id),
-                                EventLoopMessage::CursorMoved(position.x, position.y),
+                                EventLoopMessage::cursor_moved(position.x, position.y),
                             );
                         }
                         tao::event::Event::WindowEvent {
@@ -115,7 +113,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
 
                                 message = (
                                     Some(window_id),
-                                    EventLoopMessage::MouseButtton(button, pressed),
+                                    EventLoopMessage::mouse_button(button, pressed),
                                 );
                             }
                         }
@@ -143,7 +141,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                             };
 
                             message =
-                                (Some(window_id), EventLoopMessage::KeyCode(keycode, pressed));
+                                (Some(window_id), EventLoopMessage::keycode(keycode, pressed));
                         }
                         _ => {}
                     }

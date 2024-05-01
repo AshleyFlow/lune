@@ -16,7 +16,7 @@
 
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == Wry.events.CloseRequested then
+		if msg == "CloseRequested" then
 			handle.stop()
 		end
 	end)
@@ -100,26 +100,11 @@
 --[=[
 	@interface WindowEvent
 	@within Wry
-	.mousetbutton string?
+	.event_type string
+	.mousebutton string?
 	.keycode string?
 	.pressed boolean?
 	.position Dimension?
-]=]
-
---[=[
-	@readonly
-	@prop events { CloseRequested: WindowEvent, MouseButton: WindowEvent, KeyCode: WindowEvent, CursorMoved: WindowEvent, None: WindowEvent }
-	@within Wry
-
-	## Example
-
-	```lua
-	function loop(msg: WindowEvent)
-		if msg == Wry.events.CloseRequested then
-			-- close the application
-		end
-	end
-	```
 ]=]
 
 --[=[
@@ -138,14 +123,14 @@
 	```lua
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == Wry.events.CloseRequested then
+		if msg == "CloseRequested" then
 			window:close()
 			handle.stop()
-		elseif msg == Wry.events.KeyCode then
+		elseif msg == "KeyCode" then
 			print(msg)
-		elseif msg == Wry.events.MouseButton then
+		elseif msg == "MouseButton" then
 			print(msg)
-		elseif msg == Wry.events.CursorMoved then
+		elseif msg == "CursorMoved" then
 			print(msg)
 		end
 	end)

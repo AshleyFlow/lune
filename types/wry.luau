@@ -38,23 +38,25 @@ export type WebViewConfig = {
 }
 
 export type WindowEvent = {
-	mousebutton: string?,
-	keycode: string?,
-	pressed: boolean?,
-	position: Dimension?,
+	event_type: "CloseRequested",
+} | {
+	event_type: "MouseButton",
+	mousebutton: string,
+	pressed: boolean,
+} | {
+	event_type: "KeyCode",
+	keycode: string,
+	pressed: boolean,
+} | {
+	event_type: "CursorMoved",
+	position: Dimension,
+} | {
+	event_type: "None",
 }
 
 export type Connection = {
 	stop: () -> (),
 	is_running: () -> boolean,
-}
-
-wry.events = {
-	CloseRequested = (nil :: any) :: WindowEvent,
-	MouseButton = (nil :: any) :: WindowEvent,
-	KeyCode = (nil :: any) :: WindowEvent,
-	CursorMoved = (nil :: any) :: WindowEvent,
-	None = (nil :: any) :: WindowEvent,
 }
 
 wry.event_loop = function(window: Window, callback: (event: WindowEvent) -> ()): Connection

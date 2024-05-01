@@ -38,7 +38,7 @@
 	@interface WindowConfig
 	@within Wry
 	.title string?
-	.size Dimension?
+	.size Dimension? -- ? default window size represented in physical pixels
 ]=]
 
 --[=[

@@ -1,5 +1,5 @@
 local wry = require("@luneweb/wry")
-local window, handle: wry.WindowEventLoopHandle = wry.create_window({}), nil
+local window, handle: wry.Connection = wry.create_window({}), nil
 local webview = wry.create_webview(window, {
 	url = "https://tauri.app/",
 })

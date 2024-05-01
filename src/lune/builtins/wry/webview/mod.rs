@@ -9,7 +9,10 @@ use super::{window::config::LuaWindow, EVENT_LOOP};
 use crate::lune::util::http::{request::LuaRequest, response::LuaResponse};
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
-use std::rc::{Rc, Weak};
+use std::{
+    borrow::Cow,
+    rc::{Rc, Weak},
+};
 use wry::WebViewBuilder;
 
 pub fn create<'lua>(
@@ -79,7 +82,8 @@ pub fn create<'lua>(
                         let lua_res = LuaResponse::from_lua_multi(lua_res_table, &outter_lua);
 
                         if let Ok(lua_res) = lua_res {
-                            responder.respond(lua_res.into_response2().unwrap());
+                            responder
+                                .respond(lua_res.into_response::<Cow<'static, [u8]>>().unwrap());
                         } else {
                             panic!("Couldn't get lua response from custom_protocol")
                         }

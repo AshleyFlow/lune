@@ -38,8 +38,8 @@ local webview = Wry.create_webview(window, {
 
 webview:evaluate(&quot;fetch(&#x27;http://lune.app/print&#x27;)&quot;)
 ```"><link data-rh="true" rel="canonical" href="https://HighFlowey.github.io/luneweb/api/WebView"><link data-rh="true" rel="alternate" href="https://HighFlowey.github.io/luneweb/api/WebView" hreflang="en"><link data-rh="true" rel="alternate" href="https://HighFlowey.github.io/luneweb/api/WebView" hreflang="x-default"><link rel="stylesheet" href="/luneweb/assets/css/styles.19a5646f.css">
-<link rel="preload" href="/luneweb/assets/js/runtime~main.a1d7a0da.js" as="script">
-<link rel="preload" href="/luneweb/assets/js/main.766a9a6c.js" as="script">
+<link rel="preload" href="/luneweb/assets/js/runtime~main.e07a44c5.js" as="script">
+<link rel="preload" href="/luneweb/assets/js/main.7acb95a8.js" as="script">
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
@@ -60,14 +60,23 @@ webview:evaluate(&quot;fetch(&#x27;http://lune.app/print&#x27;)&quot;)
 
 webview<span class="token punctuation">:</span><span class="token function">evaluate</span><span class="token punctuation">(</span><span class="token string">"fetch('http://lune.app/print')"</span><span class="token punctuation">)</span>
 </code></pre>
-</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="evaluate_noresult"><code style="text-decoration:none">evaluate_noresult</code><a href="#evaluate_noresult" class="hash-link" aria-label="Direct link to evaluate_noresult" title="Direct link to evaluate_noresult">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L32"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">evaluate_noresult</code><code>(</code><code>script<!-- -->: </code><code class="blue_P4bS">string</code><code>) → </code><code>(</code><code>)</code></div><div>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="evaluate_noresult"><code style="text-decoration:none">evaluate_noresult</code><a href="#evaluate_noresult" class="hash-link" aria-label="Direct link to evaluate_noresult" title="Direct link to evaluate_noresult">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L35"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">evaluate_noresult</code><code>(</code><code>script<!-- -->: </code><code class="blue_P4bS">string</code><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Similar to <code>WebView:evaluate(...)</code>, but does not yield and does not return any result</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="evaluate_callback"><code style="text-decoration:none">evaluate_callback</code><a href="#evaluate_callback" class="hash-link" aria-label="Direct link to evaluate_callback" title="Direct link to evaluate_callback">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L42"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">evaluate_callback</code><code>(</code><div class="inset_uKQm"><div><code>script<!-- -->: </code><code class="blue_P4bS">string</code><code>,</code></div><div><code>callback<!-- -->: </code><code class="purple_ieR2">(</code><code>result<!-- -->: </code><code class="blue_P4bS">unknown</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<h3>Bug(s)</h3>
+<ul>
+  <li>Will not work if you run it before calling wry.run()</li>
+</ul>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="evaluate_callback"><code style="text-decoration:none">evaluate_callback</code><a href="#evaluate_callback" class="hash-link" aria-label="Direct link to evaluate_callback" title="Direct link to evaluate_callback">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L48"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">evaluate_callback</code><code>(</code><div class="inset_uKQm"><div><code>script<!-- -->: </code><code class="blue_P4bS">string</code><code>,</code></div><div><code>callback<!-- -->: </code><code class="purple_ieR2">(</code><code>result<!-- -->: </code><code class="blue_P4bS">unknown</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div></div><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Similar to <code>WebView:evaluate(...)</code>, but instead of yielding to return result, it passes the result to the callback function</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="evaluate"><code style="text-decoration:none">evaluate</code><a href="#evaluate" class="hash-link" aria-label="Direct link to evaluate" title="Direct link to evaluate">​</a></h3><span class="badge_Ba2I" style="color:#f1c40f"><span class="badgeTooltip_cWXP">This is a yielding function. When called, it will pause the Lua thread that called the function until a result is ready to be returned, without interrupting other scripts.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#f1c40f" role="img" aria-label="This is a yielding function. When called, it will pause the Lua thread that called the function until a result is ready to be returned, without interrupting other scripts."><path d="M96.4 11.9c-1.4-2.5-4-4-6.9-4H10.8c-2.9 0-5.4 1.5-6.9 4-1.4 2.5-1.4 5.5 0 7.9L43.3 88c1.4 2.5 4 4 6.9 4 2.9 0 5.4-1.5 6.9-4l39.3-68.2c1.4-2.4 1.4-5.4 0-7.9zM46.3 54.5c1.1-1.1 2.3-1.6 3.8-1.6s2.8.5 3.8 1.6c1.1 1.1 1.6 2.3 1.6 3.8s-.5 2.8-1.6 3.8c-1.1 1.1-2.3 1.6-3.8 1.6s-2.8-.5-3.8-1.6c-1.1-1.1-1.6-2.3-1.6-3.8.1-1.5.6-2.8 1.6-3.8zm-.5-4.9V21.8h8.8v27.8h-8.8z"></path></svg> <!-- -->Yields</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L69"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">evaluate</code><code>(</code><code>script<!-- -->: </code><code class="blue_P4bS">string</code><code>) → </code><code class="blue_P4bS">unknown</code></div><div>
+<h3>Bug(s)</h3>
+<ul>
+  <li>Will not work if you run it before calling wry.run()</li>
+</ul>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="evaluate"><code style="text-decoration:none">evaluate</code><a href="#evaluate" class="hash-link" aria-label="Direct link to evaluate" title="Direct link to evaluate">​</a></h3><span class="badge_Ba2I" style="color:#f1c40f"><span class="badgeTooltip_cWXP">This is a yielding function. When called, it will pause the Lua thread that called the function until a result is ready to be returned, without interrupting other scripts.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#f1c40f" role="img" aria-label="This is a yielding function. When called, it will pause the Lua thread that called the function until a result is ready to be returned, without interrupting other scripts."><path d="M96.4 11.9c-1.4-2.5-4-4-6.9-4H10.8c-2.9 0-5.4 1.5-6.9 4-1.4 2.5-1.4 5.5 0 7.9L43.3 88c1.4 2.5 4 4 6.9 4 2.9 0 5.4-1.5 6.9-4l39.3-68.2c1.4-2.4 1.4-5.4 0-7.9zM46.3 54.5c1.1-1.1 2.3-1.6 3.8-1.6s2.8.5 3.8 1.6c1.1 1.1 1.6 2.3 1.6 3.8s-.5 2.8-1.6 3.8c-1.1 1.1-2.3 1.6-3.8 1.6s-2.8-.5-3.8-1.6c-1.1-1.1-1.6-2.3-1.6-3.8.1-1.5.6-2.8 1.6-3.8zm-.5-4.9V21.8h8.8v27.8h-8.8z"></path></svg> <!-- -->Yields</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L76"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">evaluate</code><code>(</code><code>script<!-- -->: </code><code class="blue_P4bS">string</code><code>) → </code><code class="blue_P4bS">unknown</code></div><div>
 <p>Runs the provided javascript code through the webview and returns the last statement as a lua value</p>
 <h3>Bug(s)</h3>
 <ul>
+  <li>Will yield forever if you run it before calling wry.run()</li>
   <li>Will yield forever if you run it while custom protocol is sending response to webview for <strong>loading a page</strong></li>
 </ul>
 <h3>Example</h3>
@@ -80,7 +89,7 @@ webview<span class="token punctuation">:</span><span class="token function">eval
 
 <span class="token function">print</span><span class="token punctuation">(</span>result<span class="token punctuation">.</span>a<span class="token punctuation">)</span> <span class="token comment">-- 6000</span>
 </code></pre>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="ipc_handler"><code style="text-decoration:none">ipc_handler</code><a href="#ipc_handler" class="hash-link" aria-label="Direct link to ipc_handler" title="Direct link to ipc_handler">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L95"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">ipc_handler</code><code>(</code><code>callback<!-- -->: </code><code class="purple_ieR2">(</code><code>message<!-- -->: </code><code class="blue_P4bS">unknown</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS">void</code><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/Wry#Connection">Connection</a></code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="ipc_handler"><code style="text-decoration:none">ipc_handler</code><a href="#ipc_handler" class="hash-link" aria-label="Direct link to ipc_handler" title="Direct link to ipc_handler">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L102"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">ipc_handler</code><code>(</code><code>callback<!-- -->: </code><code class="purple_ieR2">(</code><code>message<!-- -->: </code><code class="blue_P4bS">unknown</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS">void</code><code>) → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/Wry#Connection">Connection</a></code></div><div>
 <p>Receive messages from javascript</p>
 <ul>
   <li>Messages will automatically be converted into luau values</li>
@@ -94,15 +103,15 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
 <pre class="language-js"><code class="language-js"><span class="token comment">// javascript</span>
 <span class="token dom variable">window</span><span class="token punctuation">.</span><span class="token property-access">luneweb</span><span class="token punctuation">.</span><span class="token method function property-access">postMessage</span><span class="token punctuation">(</span><span class="token punctuation">{</span> <span class="token literal-property property">print_this</span><span class="token operator">:</span> <span class="token string">'Hello, World!'</span> <span class="token punctuation">}</span><span class="token punctuation">)</span>
 </code></pre>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="load_url"><code style="text-decoration:none">load_url</code><a href="#load_url" class="hash-link" aria-label="Direct link to load_url" title="Direct link to load_url">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L104"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">load_url</code><code>(</code><code>url<!-- -->: </code><code class="blue_P4bS">string</code><code>) → </code><code>(</code><code>)</code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="load_url"><code style="text-decoration:none">load_url</code><a href="#load_url" class="hash-link" aria-label="Direct link to load_url" title="Direct link to load_url">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L111"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">load_url</code><code>(</code><code>url<!-- -->: </code><code class="blue_P4bS">string</code><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Navigate to the specified url</p>
-</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="load_url_with_headers"><code style="text-decoration:none">load_url_with_headers</code><a href="#load_url_with_headers" class="hash-link" aria-label="Direct link to load_url_with_headers" title="Direct link to load_url_with_headers">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L115"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">load_url_with_headers</code><code>(</code><div class="inset_uKQm"><div><code>url<!-- -->: </code><code class="blue_P4bS">string</code><code>,</code></div><div><code>headers<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/Wry#WebViewHeaders">WebViewHeaders</a></code></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="load_url_with_headers"><code style="text-decoration:none">load_url_with_headers</code><a href="#load_url_with_headers" class="hash-link" aria-label="Direct link to load_url_with_headers" title="Direct link to load_url_with_headers">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/HighFlowey/luneweb/blob/master/lib/webview.luau#L122"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>WebView<!-- -->:</code><code class="green_DgR4">load_url_with_headers</code><code>(</code><div class="inset_uKQm"><div><code>url<!-- -->: </code><code class="blue_P4bS">string</code><code>,</code></div><div><code>headers<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/luneweb/api/Wry#WebViewHeaders">WebViewHeaders</a></code></div></div><code>) → </code><code>(</code><code>)</code></div><div>
 <p>Navigate to the specified url using the specified headers</p>
 </div><h3>Errors</h3><table class="errorTable_jfN8"><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>&quot;&lt;parsed-header&gt; has invalid header value.&quot;</td><td>Occurs when headers contains more than 1 header value</td></tr></tbody></table></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
     &quot;functions&quot;: [
         {
             &quot;name&quot;: &quot;evaluate_noresult&quot;,
-            &quot;desc&quot;: &quot;Similar to `WebView:evaluate(...)`, but does not yield and does not return any result&quot;,
+            &quot;desc&quot;: &quot;Similar to `WebView:evaluate(...)`, but does not yield and does not return any result\n\n### Bug(s)\n* Will not work if you run it before calling wry.run()&quot;,
             &quot;params&quot;: [
                 {
                     &quot;name&quot;: &quot;script&quot;,
@@ -113,13 +122,13 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
             &quot;returns&quot;: [],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 32,
+                &quot;line&quot;: 35,
                 &quot;path&quot;: &quot;lib/webview.luau&quot;
             }
         },
         {
             &quot;name&quot;: &quot;evaluate_callback&quot;,
-            &quot;desc&quot;: &quot;Similar to `WebView:evaluate(...)`, but instead of yielding to return result, it passes the result to the callback function&quot;,
+            &quot;desc&quot;: &quot;Similar to `WebView:evaluate(...)`, but instead of yielding to return result, it passes the result to the callback function\n\n### Bug(s)\n* Will not work if you run it before calling wry.run()&quot;,
             &quot;params&quot;: [
                 {
                     &quot;name&quot;: &quot;script&quot;,
@@ -135,13 +144,13 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
             &quot;returns&quot;: [],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 42,
+                &quot;line&quot;: 48,
                 &quot;path&quot;: &quot;lib/webview.luau&quot;
             }
         },
         {
             &quot;name&quot;: &quot;evaluate&quot;,
-            &quot;desc&quot;: &quot;Runs the provided javascript code through the webview and returns the last statement as a lua value\n\n### Bug(s)\n* Will yield forever if you run it while custom protocol is sending response to webview for **loading a page**\n\n### Example\n\n```lua\nlocal result = webview:evaluate([[\n\tlet value = { a: 5000 };\n\tvalue.a += 1000;\n\n\tvalue\n]])\n\nprint(result.a) -- 6000\n```&quot;,
+            &quot;desc&quot;: &quot;Runs the provided javascript code through the webview and returns the last statement as a lua value\n\n### Bug(s)\n* Will yield forever if you run it before calling wry.run()\n* Will yield forever if you run it while custom protocol is sending response to webview for **loading a page**\n\n### Example\n\n```lua\nlocal result = webview:evaluate([[\n\tlet value = { a: 5000 };\n\tvalue.a += 1000;\n\n\tvalue\n]])\n\nprint(result.a) -- 6000\n```&quot;,
             &quot;params&quot;: [
                 {
                     &quot;name&quot;: &quot;script&quot;,
@@ -158,7 +167,7 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;yields&quot;: true,
             &quot;source&quot;: {
-                &quot;line&quot;: 69,
+                &quot;line&quot;: 76,
                 &quot;path&quot;: &quot;lib/webview.luau&quot;
             }
         },
@@ -180,7 +189,7 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
             ],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 95,
+                &quot;line&quot;: 102,
                 &quot;path&quot;: &quot;lib/webview.luau&quot;
             }
         },
@@ -197,7 +206,7 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
             &quot;returns&quot;: [],
             &quot;function_type&quot;: &quot;method&quot;,
             &quot;source&quot;: {
-                &quot;line&quot;: 104,
+                &quot;line&quot;: 111,
                 &quot;path&quot;: &quot;lib/webview.luau&quot;
             }
         },
@@ -225,7 +234,7 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
                 }
             ],
             &quot;source&quot;: {
-                &quot;line&quot;: 115,
+                &quot;line&quot;: 122,
                 &quot;path&quot;: &quot;lib/webview.luau&quot;
             }
         }
@@ -239,7 +248,7 @@ webview<span class="token punctuation">:</span><span class="token function">ipc_
         &quot;path&quot;: &quot;lib/webview.luau&quot;
     }
 }</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#evaluate" class="table-of-contents__link toc-highlight">:evaluate</a></li><li><a href="#evaluate_callback" class="table-of-contents__link toc-highlight">:evaluate_callback</a></li><li><a href="#evaluate_noresult" class="table-of-contents__link toc-highlight">:evaluate_noresult</a></li><li><a href="#ipc_handler" class="table-of-contents__link toc-highlight">:ipc_handler</a></li><li><a href="#load_url" class="table-of-contents__link toc-highlight">:load_url</a></li><li><a href="#load_url_with_headers" class="table-of-contents__link toc-highlight">:load_url_with_headers</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 HighFlowey. Built with Moonwave and Docusaurus.</div></div></div></footer></div>
-<script src="/luneweb/assets/js/runtime~main.a1d7a0da.js"></script>
-<script src="/luneweb/assets/js/main.766a9a6c.js"></script>
+<script src="/luneweb/assets/js/runtime~main.e07a44c5.js"></script>
+<script src="/luneweb/assets/js/main.7acb95a8.js"></script>
 </body>
 </html>

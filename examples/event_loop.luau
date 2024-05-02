@@ -11,7 +11,7 @@ end)
 
 local handle
 handle = wry.event_loop(window, function(msg)
-	if msg == wry.events.CloseRequested then
+	if msg.event_type == "CloseRequested" then
 		window:close()
 		ipc.stop()
 		handle.stop()

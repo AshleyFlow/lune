@@ -11,14 +11,14 @@ local window2, handle2 =
 	}), nil
 
 handle1 = wry.event_loop(window1, function(msg)
-	if msg == wry.events.CloseRequested then
+	if msg.event_type == "CloseRequested" then
 		window1:close()
 		handle1.stop()
 	end
 end)
 
 handle2 = wry.event_loop(window2, function(msg)
-	if msg == wry.events.CloseRequested then
+	if msg.event_type == "CloseRequested" then
 		window2:close()
 		handle2.stop()
 	end

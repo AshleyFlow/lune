@@ -18,7 +18,7 @@ local window = Wry.create_window({
 
 local handle
 handle = Wry.event_loop(window, function(msg)
-	if msg == &quot;CloseRequested&quot; then
+	if msg.event_type == &quot;CloseRequested&quot; then
 		handle.stop()
 	end
 end)
@@ -39,15 +39,15 @@ local window = Wry.create_window({
 
 local handle
 handle = Wry.event_loop(window, function(msg)
-	if msg == &quot;CloseRequested&quot; then
+	if msg.event_type == &quot;CloseRequested&quot; then
 		handle.stop()
 	end
 end)
 
 Wry.run()
 ```"><link data-rh="true" rel="canonical" href="https://HighFlowey.github.io/luneweb/api/Wry"><link data-rh="true" rel="alternate" href="https://HighFlowey.github.io/luneweb/api/Wry" hreflang="en"><link data-rh="true" rel="alternate" href="https://HighFlowey.github.io/luneweb/api/Wry" hreflang="x-default"><link rel="stylesheet" href="/luneweb/assets/css/styles.19a5646f.css">
-<link rel="preload" href="/luneweb/assets/js/runtime~main.6a5ee559.js" as="script">
-<link rel="preload" href="/luneweb/assets/js/main.8aa1351e.js" as="script">
+<link rel="preload" href="/luneweb/assets/js/runtime~main.a1d7a0da.js" as="script">
+<link rel="preload" href="/luneweb/assets/js/main.766a9a6c.js" as="script">
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function e(e){document.documentElement.setAttribute("data-theme",e)}var t=function(){var e=null;try{e=localStorage.getItem("theme")}catch(e){}return e}();null!==t?e(t):window.matchMedia("(prefers-color-scheme: dark)").matches?e("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,e("light"))}()</script><div id="__docusaurus">
@@ -62,7 +62,7 @@ Wry.run()
 
 <span class="token keyword">local</span> handle
 handle <span class="token operator">=</span> Wry<span class="token punctuation">.</span><span class="token function">event_loop</span><span class="token punctuation">(</span>window<span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span>
-	<span class="token keyword">if</span> msg <span class="token operator">==</span> <span class="token string">"CloseRequested"</span> <span class="token keyword">then</span>
+	<span class="token keyword">if</span> msg<span class="token punctuation">.</span>event_type <span class="token operator">==</span> <span class="token string">"CloseRequested"</span> <span class="token keyword">then</span>
 		handle<span class="token punctuation">.</span><span class="token function">stop</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 	<span class="token keyword">end</span>
 <span class="token keyword">end</span><span class="token punctuation">)</span>
@@ -91,14 +91,14 @@ Wry<span class="token punctuation">.</span><span class="token function">run</spa
 <h3>Example</h3>
 <pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> handle
 handle <span class="token operator">=</span> Wry<span class="token punctuation">.</span><span class="token function">event_loop</span><span class="token punctuation">(</span>window<span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span>
-	<span class="token keyword">if</span> msg <span class="token operator">==</span> <span class="token string">"CloseRequested"</span> <span class="token keyword">then</span>
+	<span class="token keyword">if</span> msg<span class="token punctuation">.</span>event_type <span class="token operator">==</span> <span class="token string">"CloseRequested"</span> <span class="token keyword">then</span>
 		window<span class="token punctuation">:</span><span class="token function">close</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 		handle<span class="token punctuation">.</span><span class="token function">stop</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
-	<span class="token keyword">elseif</span> msg <span class="token operator">==</span> <span class="token string">"KeyCode"</span> <span class="token keyword">then</span>
+	<span class="token keyword">elseif</span> msg<span class="token punctuation">.</span>event_type <span class="token operator">==</span> <span class="token string">"KeyCode"</span> <span class="token keyword">then</span>
 		<span class="token function">print</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span>
-	<span class="token keyword">elseif</span> msg <span class="token operator">==</span> <span class="token string">"MouseButton"</span> <span class="token keyword">then</span>
+	<span class="token keyword">elseif</span> msg<span class="token punctuation">.</span>event_type <span class="token operator">==</span> <span class="token string">"MouseButton"</span> <span class="token keyword">then</span>
 		<span class="token function">print</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span>
-	<span class="token keyword">elseif</span> msg <span class="token operator">==</span> <span class="token string">"CursorMoved"</span> <span class="token keyword">then</span>
+	<span class="token keyword">elseif</span> msg<span class="token punctuation">.</span>event_type <span class="token operator">==</span> <span class="token string">"CursorMoved"</span> <span class="token keyword">then</span>
 		<span class="token function">print</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span>
 	<span class="token keyword">end</span>
 <span class="token keyword">end</span><span class="token punctuation">)</span>
@@ -161,7 +161,7 @@ handle <span class="token operator">=</span> Wry<span class="token punctuation">
         },
         {
             &quot;name&quot;: &quot;event_loop&quot;,
-            &quot;desc&quot;: &quot;### Example\n\n```lua\nlocal handle\nhandle = Wry.event_loop(window, function(msg)\n\tif msg == \&quot;CloseRequested\&quot; then\n\t\twindow:close()\n\t\thandle.stop()\n\telseif msg == \&quot;KeyCode\&quot; then\n\t\tprint(msg)\n\telseif msg == \&quot;MouseButton\&quot; then\n\t\tprint(msg)\n\telseif msg == \&quot;CursorMoved\&quot; then\n\t\tprint(msg)\n\tend\nend)\n```&quot;,
+            &quot;desc&quot;: &quot;### Example\n\n```lua\nlocal handle\nhandle = Wry.event_loop(window, function(msg)\n\tif msg.event_type == \&quot;CloseRequested\&quot; then\n\t\twindow:close()\n\t\thandle.stop()\n\telseif msg.event_type == \&quot;KeyCode\&quot; then\n\t\tprint(msg)\n\telseif msg.event_type == \&quot;MouseButton\&quot; then\n\t\tprint(msg)\n\telseif msg.event_type == \&quot;CursorMoved\&quot; then\n\t\tprint(msg)\n\tend\nend)\n```&quot;,
             &quot;params&quot;: [
                 {
                     &quot;name&quot;: &quot;window&quot;,
@@ -346,13 +346,13 @@ handle <span class="token operator">=</span> Wry<span class="token punctuation">
         }
     ],
     &quot;name&quot;: &quot;Wry&quot;,
-    &quot;desc&quot;: &quot;### Built-in library for creating web applications.\n\n```lua\nlocal Wry = require(\&quot;@luneweb/wry\&quot;)\n```\n\n## Example\n\n```lua\nlocal window = Wry.create_window({\n\ttitle = \&quot;Hello, Lune!\&quot;\n})\n\nlocal handle\nhandle = Wry.event_loop(window, function(msg)\n\tif msg == \&quot;CloseRequested\&quot; then\n\t\thandle.stop()\n\tend\nend)\n\nWry.run()\n```&quot;,
+    &quot;desc&quot;: &quot;### Built-in library for creating web applications.\n\n```lua\nlocal Wry = require(\&quot;@luneweb/wry\&quot;)\n```\n\n## Example\n\n```lua\nlocal window = Wry.create_window({\n\ttitle = \&quot;Hello, Lune!\&quot;\n})\n\nlocal handle\nhandle = Wry.event_loop(window, function(msg)\n\tif msg.event_type == \&quot;CloseRequested\&quot; then\n\t\thandle.stop()\n\tend\nend)\n\nWry.run()\n```&quot;,
     &quot;source&quot;: {
         &quot;line&quot;: 27,
         &quot;path&quot;: &quot;lib/wry.luau&quot;
     }
 }</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Connection" class="table-of-contents__link toc-highlight">Connection</a></li><li><a href="#Dimension" class="table-of-contents__link toc-highlight">Dimension</a></li><li><a href="#WebViewConfig" class="table-of-contents__link toc-highlight">WebViewConfig</a></li><li><a href="#WebViewHeaders" class="table-of-contents__link toc-highlight">WebViewHeaders</a></li><li><a href="#WindowConfig" class="table-of-contents__link toc-highlight">WindowConfig</a></li><li><a href="#WindowEvent" class="table-of-contents__link toc-highlight">WindowEvent</a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#create_webview" class="table-of-contents__link toc-highlight">.create_webview</a></li><li><a href="#create_window" class="table-of-contents__link toc-highlight">.create_window</a></li><li><a href="#event_loop" class="table-of-contents__link toc-highlight">.event_loop</a></li><li><a href="#run" class="table-of-contents__link toc-highlight">.run</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 HighFlowey. Built with Moonwave and Docusaurus.</div></div></div></footer></div>
-<script src="/luneweb/assets/js/runtime~main.6a5ee559.js"></script>
-<script src="/luneweb/assets/js/main.8aa1351e.js"></script>
+<script src="/luneweb/assets/js/runtime~main.a1d7a0da.js"></script>
+<script src="/luneweb/assets/js/main.766a9a6c.js"></script>
 </body>
 </html>

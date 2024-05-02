@@ -2,7 +2,42 @@
 
 # Examples
 
+## Creating a basic Window with a WebView
+
+```lua title="src/init.luau"
+local wry = require("@luneweb/wry")
+
+local loop: wry.Connection
+local window = wry.create_window({
+  title = "Lune"
+})
+
+wry.create_webview(window, {
+  url = "https://roblox.com/"
+})
+
+
+--[[
+  if we don't create an event loop, our window will be closed
+  the moment we run the apllication
+]]
+loop = wry.event_loop(window, function(msg)
+  if msg == "CloseRequested" then
+    window:close()
+    loop.stop()
+  end
+end)
+
+--[[
+  this method will start all the previously created event loops
+  without this, our event loops will never start and the app will crash
+]]
+wry.run()
+```
+
 ## Creating a basic UI component
+
+This example does not cover how to handle a window and it's event loop.
 
 ```js title="src/javascript/hello.js"
 /*

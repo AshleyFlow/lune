@@ -17,7 +17,7 @@
 
 ## Caution
 
-None of the examples in this documentation are tested, if a method/function or property in a example doesn't exist, you can take advantage of autocomplete or the API documentation to look for the right one.
+None of the examples in the API section are tested, if a method/function or property in a example doesn't exist, you can take advantage of autocomplete or the API documentation to look for the right one.
 
 ---
 

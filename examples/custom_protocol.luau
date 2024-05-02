@@ -2,6 +2,7 @@ local wry = require("@luneweb/wry")
 local window, handle = wry.create_window({}), nil
 
 local webview = wry.create_webview(window, {
+	with_devtools = true,
 	custom_protocols = {
 		lune = function(_req)
 			return {

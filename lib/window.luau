@@ -36,7 +36,7 @@
 	@prop size Dimension
 	@within Window
 
-	* Does not account for elements in the webview
+	* Does not account for scrollbar in the webview
 
 	### WebView alternative
 

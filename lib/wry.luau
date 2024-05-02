@@ -62,12 +62,6 @@
 	@within Wry
 
 	Set headers used when loading the requested url
-
-	### Limitation
-	
-	#### Will error if it contains more than 1 header value
-	
-	Not sure why this happens, but after lots of debugging I'm certain it's an issue with wry and not luneweb
 ]=]
 
 --[=[
@@ -77,11 +71,12 @@
 	.init_script string?
 	.html string?
 	.url string?
-	.headers WebViewHeaders? -- ! having more than 1 header value will error
+	.headers WebViewHeaders?
 	.custom_protocols { [string]: HttpHandler }?
 ]=]
 
 --[=[
+	@error "<parsed-header> has invalid header value." -- Occurs when config.headers contains more than 1 header value
 	@function create_webview
 	@within Wry
 

@@ -60,7 +60,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
 
     if *event_loop_started {
         return Err(LuaError::RuntimeError(
-            "wry.run() got called more than once".into(),
+            "wry.run() got called more than once\nthe first call to event_loop automatically calls this function.".into(),
         ));
     }
 

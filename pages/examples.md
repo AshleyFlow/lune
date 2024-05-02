@@ -60,8 +60,15 @@ This example does not cover how to handle a window and it's event loop.
     el.innerHTML = "Hello, Lune!";
     document.body.appendChild(el);
     return { success: true };
-  } catch {
-    return { success: false };
+  } catch (error) {
+    return {
+      success: false,
+      error: {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      },
+    };
   }
 
   /*
@@ -85,8 +92,17 @@ local regex = require("@luneweb/regex")
     and the webview library turns javascript values into luau values automatically
     we can create a type for it so we can get typechecking in our code
 ]]
+type JSError = {
+	message: string,
+	name: string,
+	stack: string,
+}
+
 type Status = {
-	success: boolean,
+	success: true,
+} | {
+	success: false,
+	error: JSError,
 }
 
 local function label(text: string): Status
@@ -111,6 +127,7 @@ local status = label("Hello, World!")
     we can check the result and print out a warning if .success was false
 ]]
 if status.success == false then
-	warn("Failed to create label")
+	print("Failed to create web element")
+	print(status.error)
 end
 ```

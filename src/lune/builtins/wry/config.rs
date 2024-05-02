@@ -10,88 +10,103 @@ pub struct LuaDimension {
 }
 
 // EventLoopMessage
-#[derive(Clone, Debug, PartialEq)]
-pub enum EventLoopMessage {
-    CloseRequested,
-    MouseButtton(String, bool),
-    KeyCode(String, bool),
-    CursorMoved(f64, f64),
-    None,
+#[derive(Debug, Default, Clone)]
+pub struct EventLoopMessage {
+    event_type: String,
+    mousebutton: Option<String>,
+    keycode: Option<String>,
+    pressed: Option<bool>,
+    position: Option<(f64, f64)>,
 }
 
 impl EventLoopMessage {
-    pub fn create_lua_table(lua: &Lua) -> LuaResult<LuaTable> {
-        TableBuilder::new(lua)?
-            .with_value("CloseRequested", Self::CloseRequested)?
-            .with_value("MouseButton", Self::MouseButtton("".into(), false))?
-            .with_value("KeyCode", Self::KeyCode("".into(), false))?
-            .with_value("CursorMoved", Self::CursorMoved(0.0, 0.0))?
-            .with_value("None", Self::None)?
-            .build_readonly()
+    pub fn close_requested() -> Self {
+        Self {
+            event_type: "CloseRequested".into(),
+            ..Default::default()
+        }
+    }
+
+    pub fn mouse_button(mousebutton: String, pressed: bool) -> Self {
+        Self {
+            event_type: "MouseButton".into(),
+            mousebutton: Some(mousebutton),
+            pressed: Some(pressed),
+            ..Default::default()
+        }
+    }
+
+    pub fn keycode(keycode: String, pressed: bool) -> Self {
+        Self {
+            event_type: "KeyCode".into(),
+            keycode: Some(keycode),
+            pressed: Some(pressed),
+            ..Default::default()
+        }
+    }
+
+    pub fn cursor_moved(x: f64, y: f64) -> Self {
+        Self {
+            event_type: "CursorMoved".into(),
+            position: Some((x, y)),
+            ..Default::default()
+        }
+    }
+
+    pub fn none() -> Self {
+        Self {
+            event_type: "None".into(),
+            ..Default::default()
+        }
     }
 }
 
 impl LuaUserData for EventLoopMessage {
-    fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
-        fields.add_field_method_get("mousebutton", |lua: &Lua, this: &Self| match this {
-            EventLoopMessage::MouseButtton(button, _) => Ok(button.clone().into_lua(lua)?),
-            _ => Ok(LuaValue::Nil),
-        });
-
-        fields.add_field_method_get("keycode", |lua: &Lua, this: &Self| match this {
-            EventLoopMessage::KeyCode(keycode, _) => Ok(keycode.clone().into_lua(lua)?),
-            _ => Ok(LuaValue::Nil),
-        });
-
-        fields.add_field_method_get("pressed", |_lua: &Lua, this: &Self| match this {
-            EventLoopMessage::MouseButtton(_, pressed, ..) => Ok(LuaValue::Boolean(*pressed)),
-            EventLoopMessage::KeyCode(_, pressed, ..) => Ok(LuaValue::Boolean(*pressed)),
-            _ => Ok(LuaValue::Nil),
-        });
-
-        fields.add_field_method_get("position", |lua: &Lua, this: &Self| match this {
-            EventLoopMessage::CursorMoved(x, y) => Ok(LuaValue::Table(
-                TableBuilder::new(lua)?
-                    .with_value("x", x.into_lua(lua)?)?
-                    .with_value("y", y.into_lua(lua)?)?
-                    .build_readonly()?,
-            )),
-            _ => Ok(LuaValue::Nil),
+    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method("__tostring", |_lua: &Lua, this: &Self, _: ()| {
+            Ok(this.event_type.clone())
         });
     }
 
-    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
-        methods.add_meta_method(
-            "__eq",
-            |_lua, this: &Self, other: LuaUserDataRef<'lua, Self>| {
-                Ok(matches!(
-                    (this, other.clone()),
-                    (Self::CloseRequested, Self::CloseRequested)
-                        | (Self::MouseButtton(..), Self::MouseButtton(..))
-                        | (Self::KeyCode(..), Self::KeyCode(..))
-                        | (Self::CursorMoved(..), Self::CursorMoved(..))
-                        | (Self::None, Self::None)
-                ))
-            },
-        );
+    fn add_fields<'lua, F: LuaUserDataFields<'lua, Self>>(fields: &mut F) {
+        fields.add_field_method_get("event_type", |_lua: &Lua, this: &Self| {
+            Ok(this.event_type.clone())
+        });
 
-        methods.add_meta_method(
-            "__tostring",
-            |_lua: &Lua, this: &Self, _: ()| -> LuaResult<String> {
-                Ok(match this {
-                    EventLoopMessage::CloseRequested => "CloseRequested".to_string(),
-                    EventLoopMessage::MouseButtton(button, pressed) => {
-                        format!("MouseButton({}:{})", button, pressed)
-                    }
-                    EventLoopMessage::KeyCode(keycode, pressed) => {
-                        format!("KeyCode({}:{})", keycode, pressed)
-                    }
-                    EventLoopMessage::CursorMoved(x, y) => {
-                        format!("CursorMoved(x: {}, y: {})", x, y)
-                    }
-                    EventLoopMessage::None => "None".to_string(),
-                })
-            },
-        );
+        fields.add_field_method_get("mousebutton", |lua: &Lua, this: &Self| {
+            if let Some(mousebutton) = &this.mousebutton {
+                mousebutton.clone().into_lua(lua)
+            } else {
+                Ok(LuaValue::Nil)
+            }
+        });
+
+        fields.add_field_method_get("keycode", |lua: &Lua, this: &Self| {
+            if let Some(keycode) = &this.keycode {
+                keycode.clone().into_lua(lua)
+            } else {
+                Ok(LuaValue::Nil)
+            }
+        });
+
+        fields.add_field_method_get("pressed", |lua: &Lua, this: &Self| {
+            if let Some(pressed) = &this.pressed {
+                Ok(pressed.into_lua(lua)?)
+            } else {
+                Ok(LuaValue::Nil)
+            }
+        });
+
+        fields.add_field_method_get("position", |lua: &Lua, this: &Self| {
+            if let Some(position) = &this.position {
+                TableBuilder::new(lua)?
+                    .with_value("x", position.0.into_lua(lua)?)?
+                    .with_value("y", position.1.into_lua(lua)?)?
+                    .build_readonly()?
+                    .into_lua(lua)
+            } else {
+                Ok(LuaValue::Nil)
+            }
+        });
     }
 }

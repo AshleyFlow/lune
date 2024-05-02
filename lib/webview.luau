@@ -22,12 +22,6 @@
 ]=]
 
 --[=[
-	@interface WebViewIPCHandle
-	@within WebView
-	.stop () -> ()
-]=]
-
---[=[
 	@method evaluate_noresult
 	@within WebView
 
@@ -96,7 +90,7 @@
 	```
 
 	@param callback ( message: unknown ) -> void
-	@return WebViewIPCHandle
+	@return Connection
 ]=]
 
 --[=[
@@ -109,13 +103,14 @@
 ]=]
 
 --[=[
+	@error "<parsed-header> has invalid header value." -- Occurs when headers contains more than 1 header value
 	@method load_url_with_headers
 	@within WebView
 
 	Navigate to the specified url using the specified headers
 
 	@param url string
-	@param headers WebViewHeaders -- ! having more than 1 header value will error
+	@param headers WebViewHeaders
 ]=]
 
 return {}

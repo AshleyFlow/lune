@@ -14,13 +14,13 @@ pub struct LuaWebViewMessage {
 impl LuaWebViewMessage {
     pub fn into_eventloop_message(self) -> Option<EventLoopMessage> {
         if let Some(position) = self.position {
-            Some(EventLoopMessage::CursorMoved(position.x, position.y))
+            Some(EventLoopMessage::cursor_moved(position.x, position.y))
         } else if let Some(mousebutton) = self.mousebutton {
             let pressed = self.pressed.unwrap();
-            Some(EventLoopMessage::MouseButtton(mousebutton, pressed))
+            Some(EventLoopMessage::mouse_button(mousebutton, pressed))
         } else if let Some(keycode) = self.keycode {
             let pressed = self.pressed.unwrap();
-            Some(EventLoopMessage::KeyCode(keycode, pressed))
+            Some(EventLoopMessage::keycode(keycode, pressed))
         } else {
             None
         }

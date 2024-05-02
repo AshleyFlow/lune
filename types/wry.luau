@@ -16,13 +16,14 @@ export type Window = {
 
 export type WindowConfig = {
 	title: string?,
+	size: Dimension?,
 }
 
 export type WebView = {
 	evaluate_noresult: (self: WebView, javascript: string) -> (),
 	evaluate_callback: (self: WebView, javascript: string, callback: (unknown) -> ()) -> (),
 	evaluate: (self: WebView, javascript: string) -> unknown,
-	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> WebViewIPCHandle,
+	ipc_handler: (self: WebView, callback: (message: unknown) -> ()) -> Connection,
 	load_url: (self: WebView, url: string) -> (),
 	load_url_with_headers: (self: WebView, url: string, headers: { [string]: string }) -> (),
 }
@@ -37,32 +38,28 @@ export type WebViewConfig = {
 }
 
 export type WindowEvent = {
-	mousebutton: string?,
-	keycode: string?,
-	pressed: boolean?,
-	position: Dimension?,
+	event_type: "CloseRequested",
+} | {
+	event_type: "MouseButton",
+	mousebutton: string,
+	pressed: boolean,
+} | {
+	event_type: "KeyCode",
+	keycode: string,
+	pressed: boolean,
+} | {
+	event_type: "CursorMoved",
+	position: Dimension,
+} | {
+	event_type: "None",
 }
 
-export type WebViewIPCHandle = {
+export type Connection = {
 	stop: () -> (),
+	is_running: () -> boolean,
 }
 
-export type WindowEventLoopHandle = {
-	stop: () -> (),
-}
-
-wry.events = {
-	CloseRequested = (nil :: any) :: WindowEvent,
-	MouseButton = (nil :: any) :: WindowEvent,
-	KeyCode = (nil :: any) :: WindowEvent,
-	CursorMoved = (nil :: any) :: WindowEvent,
-	None = (nil :: any) :: WindowEvent,
-}
-
-wry.event_loop = function(
-	window: Window,
-	callback: (event: WindowEvent) -> ()
-): WindowEventLoopHandle
+wry.event_loop = function(window: Window, callback: (event: WindowEvent) -> ()): Connection
 	return nil :: any
 end
 

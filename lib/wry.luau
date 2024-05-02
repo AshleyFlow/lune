@@ -16,7 +16,7 @@
 
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == Wry.events.CloseRequested then
+		if msg == "CloseRequested" then
 			handle.stop()
 		end
 	end)
@@ -38,6 +38,7 @@
 	@interface WindowConfig
 	@within Wry
 	.title string?
+	.size Dimension? -- ? default window size represented in physical pixels
 ]=]
 
 --[=[
@@ -61,12 +62,6 @@
 	@within Wry
 
 	Set headers used when loading the requested url
-
-	### Limitation
-	
-	#### Will error if it contains more than 1 header value
-	
-	Not sure why this happens, but after lots of debugging I'm certain it's an issue with wry and not luneweb
 ]=]
 
 --[=[
@@ -76,11 +71,12 @@
 	.init_script string?
 	.html string?
 	.url string?
-	.headers WebViewHeaders? -- ! having more than 1 header value will error
+	.headers WebViewHeaders?
 	.custom_protocols { [string]: HttpHandler }?
 ]=]
 
 --[=[
+	@error "<parsed-header> has invalid header value." -- Occurs when config.headers contains more than 1 header value
 	@function create_webview
 	@within Wry
 
@@ -99,32 +95,18 @@
 --[=[
 	@interface WindowEvent
 	@within Wry
-	.mousetbutton string?
+	.event_type string
+	.mousebutton string?
 	.keycode string?
 	.pressed boolean?
 	.position Dimension?
 ]=]
 
 --[=[
-	@readonly
-	@prop events { CloseRequested: WindowEvent, MouseButton: WindowEvent, KeyCode: WindowEvent, CursorMoved: WindowEvent, None: WindowEvent }
-	@within Wry
-
-	## Example
-
-	```lua
-	function loop(msg: WindowEvent)
-		if msg == Wry.events.CloseRequested then
-			-- close the application
-		end
-	end
-	```
-]=]
-
---[=[
-	@interface WindowEventLoopHandle
+	@interface Connection
 	@within Wry
 	.stop () -> ()
+	.is_running () -> boolean
 ]=]
 
 --[=[
@@ -136,14 +118,14 @@
 	```lua
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == Wry.events.CloseRequested then
+		if msg == "CloseRequested" then
 			window:close()
 			handle.stop()
-		elseif msg == Wry.events.KeyCode then
+		elseif msg == "KeyCode" then
 			print(msg)
-		elseif msg == Wry.events.MouseButton then
+		elseif msg == "MouseButton" then
 			print(msg)
-		elseif msg == Wry.events.CursorMoved then
+		elseif msg == "CursorMoved" then
 			print(msg)
 		end
 	end)
@@ -151,7 +133,7 @@
 
 	@param window Window
 	@param callback (WindowEvent) -> ()
-	@return WindowEventLoopHandle
+	@return Connection
 ]=]
 
 --[=[

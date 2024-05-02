@@ -51,13 +51,23 @@ impl LuaUserData for LuaWindow {
 // LuaWindowConfig
 pub struct LuaWindowConfig {
     pub title: String,
+    pub size: Option<(u32, u32)>,
 }
 
 impl<'lua> FromLua<'lua> for LuaWindowConfig {
     fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
         if let Some(config) = value.as_table() {
+            let size = if let Ok(size) = config.get::<_, LuaTable>("size") {
+                let width: u32 = size.get("x")?;
+                let height: u32 = size.get("y")?;
+                Some((width, height))
+            } else {
+                None
+            };
+
             Ok(Self {
                 title: config.get("title").unwrap_or("Lune WebView".to_string()),
+                size,
             })
         } else {
             Err(LuaError::FromLuaConversionError {

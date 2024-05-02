@@ -71,7 +71,7 @@ impl Service<Request<Incoming>> for Svc {
                     .get_thread_result(thread_id)
                     .expect("Missing handler thread result")?;
 
-                LuaResponse::from_lua_multi(thread_res, &lua)?.into_response1()
+                LuaResponse::from_lua_multi(thread_res, &lua)?.into_response::<Full<Bytes>>()
             })
         }
     }

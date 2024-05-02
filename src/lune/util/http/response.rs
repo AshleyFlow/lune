@@ -18,36 +18,40 @@ pub struct LuaResponse {
     pub body: Option<Vec<u8>>,
 }
 
+pub trait IntoResponseBody {
+    type BodyType;
+
+    fn into_response_body(body: Vec<u8>) -> Self::BodyType;
+}
+
+impl IntoResponseBody for Full<Bytes> {
+    type BodyType = Full<Bytes>;
+
+    fn into_response_body(body: Vec<u8>) -> Self::BodyType {
+        Full::new(Bytes::from(body))
+    }
+}
+
+impl IntoResponseBody for Cow<'static, [u8]> {
+    type BodyType = Cow<'static, [u8]>;
+
+    fn into_response_body(body: Vec<u8>) -> Self::BodyType {
+        Cow::Owned(body)
+    }
+}
+
 impl LuaResponse {
-    pub fn into_response1(self) -> LuaResult<Response<Full<Bytes>>> {
+    pub fn into_response<B: IntoResponseBody>(self) -> LuaResult<Response<B::BodyType>> {
         Ok(match self.kind {
             LuaResponseKind::PlainText => Response::builder()
                 .status(200)
                 .header("Content-Type", "text/plain")
-                .body(Full::new(Bytes::from(self.body.unwrap())))
+                .body(B::into_response_body(self.body.unwrap()))
                 .into_lua_err()?,
             LuaResponseKind::Table => {
                 let mut response = Response::builder()
                     .status(self.status)
-                    .body(Full::new(Bytes::from(self.body.unwrap_or_default())))
-                    .into_lua_err()?;
-                response.headers_mut().extend(self.headers);
-                response
-            }
-        })
-    }
-
-    pub fn into_response2(self) -> LuaResult<Response<Cow<'static, [u8]>>> {
-        Ok(match self.kind {
-            LuaResponseKind::PlainText => Response::builder()
-                .status(200)
-                .header("Content-Type", "text/plain")
-                .body(Cow::Owned(self.body.unwrap()))
-                .unwrap(),
-            LuaResponseKind::Table => {
-                let mut response = Response::builder()
-                    .status(self.status)
-                    .body(Cow::Owned(self.body.unwrap_or_default()))
+                    .body(B::into_response_body(self.body.unwrap()))
                     .into_lua_err()?;
                 response.headers_mut().extend(self.headers);
                 response

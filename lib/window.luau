@@ -8,7 +8,7 @@
 	local handle
 
 	handle = Wry.event_loop(window, function(msg)
-		if msg == Wry.events.CloseRequested then
+		if msg == "CloseRequested" then
 			window:close()
 			handle.stop()
 		end
@@ -36,7 +36,7 @@
 	@prop size Dimension
 	@within Window
 
-	* Does not account for elements in the webview
+	* Does not account for scrollbar in the webview
 
 	### WebView alternative
 

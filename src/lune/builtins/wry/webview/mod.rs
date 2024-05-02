@@ -34,8 +34,6 @@ pub fn create<'lua>(
 
     if let Some(html) = config.html {
         webview_builder = webview_builder.with_html(html);
-    } else if let Some(url) = config.url {
-        webview_builder = webview_builder.with_url_and_headers(url, config.headers);
     }
 
     for (custom_protocol_name, custom_protocol_fn_key) in config.custom_protocols {
@@ -112,6 +110,13 @@ pub fn create<'lua>(
     webview_builder = webview_builder.with_initialization_script(&init_script.read());
 
     let webview = webview_builder.build().unwrap();
+
+    if let Some(url) = config.url {
+        webview
+            .load_url_with_headers(url.as_str(), config.headers)
+            .into_lua_err()?;
+    }
+
     let lua_webview = LuaWebView {
         webview,
         ipc_sender,

@@ -1,5 +1,8 @@
 use crate::lune::{
-    builtins::serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat},
+    builtins::{
+        serde::encode_decode::{EncodeDecodeConfig, EncodeDecodeFormat},
+        wry::error_if_before_run,
+    },
     util::{connection::create_connection_handler, http::lua_table_to_headers},
 };
 use http::HeaderMap;
@@ -19,6 +22,10 @@ impl LuaUserData for LuaWebView {
         methods.add_method(
             "evaluate_noresult",
             |_lua: &Lua, this: &Self, script: String| {
+                if let Some(err) = error_if_before_run("evaluate_noresult") {
+                    return Err(err);
+                }
+
                 this.webview.evaluate_script(script.as_str()).into_lua_err()
             },
         );
@@ -26,6 +33,10 @@ impl LuaUserData for LuaWebView {
         methods.add_method(
             "evaluate_callback",
             |lua: &Lua, this: &Self, (script, callback): (String, LuaFunction)| {
+                if let Some(err) = error_if_before_run("evaluate_callback") {
+                    return Err(err);
+                }
+
                 let (result_tx, mut result_rx) = tokio::sync::watch::channel("null".to_string());
 
                 this.webview
@@ -66,6 +77,10 @@ impl LuaUserData for LuaWebView {
         methods.add_async_method(
             "evaluate",
             |lua: &Lua, this: &Self, script: String| async move {
+                if let Some(err) = error_if_before_run("evaluate") {
+                    return Err(err);
+                }
+
                 let (result_tx, mut result_rx) = tokio::sync::watch::channel("null".to_string());
 
                 this.webview

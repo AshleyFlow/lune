@@ -55,6 +55,19 @@ pub fn winit_create_webview<'lua>(
     webview::create(lua, values)
 }
 
+pub fn error_if_before_run(name: &str) -> Option<LuaError> {
+    let event_loop_started = EVENT_LOOP_STARTED.lock().unwrap();
+
+    if !(*event_loop_started) {
+        Some(LuaError::RuntimeError(format!(
+            "please make sure to call {} after calling wry.run()",
+            name
+        )))
+    } else {
+        None
+    }
+}
+
 pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
     let mut event_loop_started = EVENT_LOOP_STARTED.lock().unwrap();
 
@@ -65,7 +78,6 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
     }
 
     *event_loop_started = true;
-    drop(event_loop_started);
 
     lua.spawn_local(async {
         loop {

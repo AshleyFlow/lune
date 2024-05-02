@@ -33,6 +33,4 @@ local webview = wry.create_webview(window2, {
 	]],
 })
 
-wry.run()
-
 print(webview:evaluate('("b" + "a" + +"a" + "a").toLowerCase()'))

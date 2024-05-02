@@ -22,5 +22,3 @@ handle = wry.event_loop(window, function(msg)
 		webview:evaluate(script)
 	end
 end)
-
-wry.run()

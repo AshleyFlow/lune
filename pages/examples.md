@@ -22,17 +22,11 @@ wry.create_webview(window, {
   the moment we run the apllication
 ]]
 loop = wry.event_loop(window, function(msg)
-  if msg == "CloseRequested" then
+  if msg.event_type == "CloseRequested" then
     window:close()
     loop.stop()
   end
 end)
-
---[[
-  this method will start all the previously created event loops
-  without this, our event loops will never start and the app will crash
-]]
-wry.run()
 ```
 
 ## Creating a basic UI component

@@ -71,6 +71,11 @@ wry.create_webview = function(window: Window, config: WebViewConfig): WebView
 	return nil :: any
 end
 
+--[=[
+	@deprecated
+
+	event_loop automatically calls this function
+]=]
 wry.run = function(): Window
 	return nil :: any
 end

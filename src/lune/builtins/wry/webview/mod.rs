@@ -23,111 +23,103 @@ pub fn create<'lua>(
     let field2 = values.get(1).expect("Parameter 2 is missing");
 
     let config = LuaWebViewConfig::from_lua(field2.clone(), lua)?;
+    let mut window = field1.as_userdata().unwrap().borrow_mut::<LuaWindow>()?;
 
-    if let Some(window) = field1.as_userdata() {
-        let mut window = window.borrow_mut::<LuaWindow>()?;
+    let mut webview_builder =
+        WebViewBuilder::new(&window.window).with_devtools(config.with_devtools);
 
-        let mut webview_builder =
-            WebViewBuilder::new(&window.window).with_devtools(config.with_devtools);
+    let mut init_script = LuaWebViewScript::new();
+    init_script.write(JAVASCRIPT_API);
+    init_script.extract_from_option(config.init_script);
 
-        let mut init_script = LuaWebViewScript::new();
-        init_script.write(JAVASCRIPT_API);
-        init_script.extract_from_option(config.init_script);
-
-        if let Some(html) = config.html {
-            webview_builder = webview_builder.with_html(html);
-        } else if let Some(url) = config.url {
-            webview_builder = webview_builder.with_url_and_headers(url, config.headers);
-        }
-
-        for (custom_protocol_name, custom_protocol_fn_key) in config.custom_protocols {
-            let inner_lua = lua
-                .app_data_ref::<Weak<Lua>>()
-                .expect("Missing weak lua ref")
-                .upgrade()
-                .expect("Lua was dropped unexpectedly");
-
-            let custom_protocol_fn_key = Rc::new(custom_protocol_fn_key);
-
-            webview_builder = webview_builder.with_asynchronous_custom_protocol(
-                custom_protocol_name,
-                move |request, responder| {
-                    let outter_lua = inner_lua
-                        .app_data_ref::<Weak<Lua>>()
-                        .expect("Missing weak lua ref")
-                        .upgrade()
-                        .expect("Lua was dropped unexpectedly");
-
-                    let custom_protocol_fn_key = custom_protocol_fn_key.clone();
-
-                    inner_lua.as_ref().spawn_local(async move {
-                        let (head, body) = request.into_parts();
-                        let lua_req = LuaRequest { head, body };
-
-                        let lua = outter_lua.as_ref();
-                        let lua_req_table = lua_req.into_lua_table(&outter_lua).unwrap();
-
-                        let custom_protocol_fn = lua
-                            .registry_value::<LuaFunction>(&custom_protocol_fn_key)
-                            .unwrap();
-
-                        let thread = lua.create_thread(custom_protocol_fn).unwrap();
-                        let thread_id = lua.push_thread_back(thread, lua_req_table).unwrap();
-
-                        lua.track_thread(thread_id);
-                        lua.wait_for_thread(thread_id).await;
-
-                        let lua_res_table =
-                            outter_lua.get_thread_result(thread_id).unwrap().unwrap();
-                        let lua_res = LuaResponse::from_lua_multi(lua_res_table, &outter_lua);
-
-                        if let Ok(lua_res) = lua_res {
-                            responder
-                                .respond(lua_res.into_response::<Cow<'static, [u8]>>().unwrap());
-                        } else {
-                            panic!("Couldn't get lua response from custom_protocol")
-                        }
-                    });
-                },
-            );
-        }
-
-        let window_id = window.window.id();
-        let ipc_sender = tokio::sync::watch::Sender::new(String::new());
-        let inner_ipc_sender = ipc_sender.clone();
-
-        webview_builder = EVENT_LOOP.with(|event_loop| {
-            let event_loop_proxy = event_loop.borrow().create_proxy();
-
-            webview_builder.with_ipc_handler(move |request| {
-                let body = request.body().as_str();
-                let message: Result<LuaWebViewMessage, serde_json::Error> =
-                    serde_json::from_str(body);
-
-                if let Ok(message) = message {
-                    let msg = message.into_eventloop_message().unwrap();
-                    let send = (window_id, msg);
-                    event_loop_proxy.send_event(send).unwrap();
-                } else if inner_ipc_sender.receiver_count() > 0 {
-                    inner_ipc_sender.send(body.to_string()).unwrap();
-                }
-            })
-        });
-
-        webview_builder = webview_builder.with_initialization_script(&init_script.read());
-
-        let webview = webview_builder.build().unwrap();
-        let lua_webview = LuaWebView {
-            webview,
-            ipc_sender,
-        };
-
-        let rc_lua_webview = Rc::new(lua_webview);
-
-        window.webview = Some(Rc::clone(&rc_lua_webview));
-
-        lua.create_userdata(rc_lua_webview)
-    } else {
-        Err(LuaError::RuntimeError("".into()))
+    if let Some(html) = config.html {
+        webview_builder = webview_builder.with_html(html);
+    } else if let Some(url) = config.url {
+        webview_builder = webview_builder.with_url_and_headers(url, config.headers);
     }
+
+    for (custom_protocol_name, custom_protocol_fn_key) in config.custom_protocols {
+        let inner_lua = lua
+            .app_data_ref::<Weak<Lua>>()
+            .expect("Missing weak lua ref")
+            .upgrade()
+            .expect("Lua was dropped unexpectedly");
+
+        let custom_protocol_fn_key = Rc::new(custom_protocol_fn_key);
+
+        webview_builder = webview_builder.with_asynchronous_custom_protocol(
+            custom_protocol_name,
+            move |request, responder| {
+                let outter_lua = inner_lua
+                    .app_data_ref::<Weak<Lua>>()
+                    .expect("Missing weak lua ref")
+                    .upgrade()
+                    .expect("Lua was dropped unexpectedly");
+
+                let custom_protocol_fn_key = custom_protocol_fn_key.clone();
+
+                inner_lua.as_ref().spawn_local(async move {
+                    let (head, body) = request.into_parts();
+                    let lua_req = LuaRequest { head, body };
+
+                    let lua = outter_lua.as_ref();
+                    let lua_req_table = lua_req.into_lua_table(&outter_lua).unwrap();
+
+                    let custom_protocol_fn = lua
+                        .registry_value::<LuaFunction>(&custom_protocol_fn_key)
+                        .unwrap();
+
+                    let thread = lua.create_thread(custom_protocol_fn).unwrap();
+                    let thread_id = lua.push_thread_back(thread, lua_req_table).unwrap();
+
+                    lua.track_thread(thread_id);
+                    lua.wait_for_thread(thread_id).await;
+
+                    let lua_res_table = outter_lua.get_thread_result(thread_id).unwrap().unwrap();
+                    let lua_res = LuaResponse::from_lua_multi(lua_res_table, &outter_lua);
+
+                    if let Ok(lua_res) = lua_res {
+                        responder.respond(lua_res.into_response::<Cow<'static, [u8]>>().unwrap());
+                    } else {
+                        panic!("Couldn't get lua response from custom_protocol")
+                    }
+                });
+            },
+        );
+    }
+
+    let window_id = window.window.id();
+    let ipc_sender = tokio::sync::watch::Sender::new(String::new());
+    let inner_ipc_sender = ipc_sender.clone();
+
+    webview_builder = EVENT_LOOP.with(|event_loop| {
+        let event_loop_proxy = event_loop.borrow().create_proxy();
+
+        webview_builder.with_ipc_handler(move |request| {
+            let body = request.body().as_str();
+            let message: Result<LuaWebViewMessage, serde_json::Error> = serde_json::from_str(body);
+
+            if let Ok(message) = message {
+                let msg = message.into_eventloop_message().unwrap();
+                let send = (window_id, msg);
+                event_loop_proxy.send_event(send).unwrap();
+            } else if inner_ipc_sender.receiver_count() > 0 {
+                inner_ipc_sender.send(body.to_string()).unwrap();
+            }
+        })
+    });
+
+    webview_builder = webview_builder.with_initialization_script(&init_script.read());
+
+    let webview = webview_builder.build().unwrap();
+    let lua_webview = LuaWebView {
+        webview,
+        ipc_sender,
+    };
+
+    let rc_lua_webview = Rc::new(lua_webview);
+
+    window.webview = Some(Rc::clone(&rc_lua_webview));
+
+    lua.create_userdata(rc_lua_webview)
 }

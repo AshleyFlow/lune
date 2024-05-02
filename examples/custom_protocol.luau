@@ -32,8 +32,6 @@ handle = wry.event_loop(window, function(msg)
 	end
 end)
 
-wry.run()
-
 require("@luneweb/task").wait(2)
 
 webview:load_url("http://luneweb.app/")

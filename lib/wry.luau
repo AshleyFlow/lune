@@ -16,12 +16,10 @@
 
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == "CloseRequested" then
+		if msg.event_type == "CloseRequested" then
 			handle.stop()
 		end
 	end)
-
-	Wry.run()
 	```
 ]=]
 
@@ -118,14 +116,14 @@
 	```lua
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == "CloseRequested" then
+		if msg.event_type == "CloseRequested" then
 			window:close()
 			handle.stop()
-		elseif msg == "KeyCode" then
+		elseif msg.event_type == "KeyCode" then
 			print(msg)
-		elseif msg == "MouseButton" then
+		elseif msg.event_type == "MouseButton" then
 			print(msg)
-		elseif msg == "CursorMoved" then
+		elseif msg.event_type == "CursorMoved" then
 			print(msg)
 		end
 	end)
@@ -137,14 +135,16 @@
 ]=]
 
 --[=[
+	@deprecated 0.1.6 -- Gets called automatically by event_loop
+	@error "wry.run() got called more than once" -- will error if it gets called more than once
 	@function run
 	@within Wry
 
 	Runs the main event loop of your application
 
-	## Requirement
+	### Requirement
 
-	### Must be run when there is atleast one active event loop connection
+	Must be run when there is atleast one active event loop connection
 ]=]
 
 return {}

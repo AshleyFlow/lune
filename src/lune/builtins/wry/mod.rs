@@ -7,7 +7,12 @@ use crate::lune::util::{connection::create_connection_handler, TableBuilder};
 use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
-use std::{cell::RefCell, rc::Weak, time::Duration};
+use std::{
+    cell::RefCell,
+    rc::Weak,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tao::{
     event_loop::{EventLoop, EventLoopBuilder},
     platform::run_return::EventLoopExtRunReturn,
@@ -34,6 +39,8 @@ thread_local! {
     pub static EVENT_LOOP: RefCell<EventLoop<(WindowId, EventLoopMessage)>> = RefCell::new(EventLoopBuilder::with_user_event().build());
 }
 
+pub static EVENT_LOOP_STARTED: Lazy<Arc<Mutex<bool>>> = Lazy::new(|| Arc::new(Mutex::new(false)));
+
 pub fn winit_create_window<'lua>(
     lua: &'lua Lua,
     values: LuaMultiValue<'lua>,
@@ -49,6 +56,17 @@ pub fn winit_create_webview<'lua>(
 }
 
 pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
+    let mut event_loop_started = EVENT_LOOP_STARTED.lock().unwrap();
+
+    if *event_loop_started {
+        return Err(LuaError::RuntimeError(
+            "wry.run() got called more than once".into(),
+        ));
+    }
+
+    *event_loop_started = true;
+    drop(event_loop_started);
+
     lua.spawn_local(async {
         loop {
             let mut message: (Option<WindowId>, EventLoopMessage) =
@@ -200,40 +218,49 @@ pub async fn winit_event_loop<'lua>(
                 }
             }
 
-            let (window, callback) = {
-                let window = inner_field1
-                    .as_userdata()
-                    .unwrap()
-                    .borrow::<LuaWindow>()
-                    .unwrap();
+            {
+                let (window, callback) = {
+                    let window = inner_field1
+                        .as_userdata()
+                        .unwrap()
+                        .borrow::<LuaWindow>()
+                        .unwrap();
 
-                let callback = inner_field2.as_function().unwrap();
+                    let callback = inner_field2.as_function().unwrap();
 
-                (window, callback.clone())
-            };
+                    (window, callback.clone())
+                };
 
-            let message = listener.borrow_and_update().clone();
+                let message = listener.borrow_and_update().clone();
 
-            if let Some(window_id) = message.0 {
-                if window.window.id() != window_id {
-                    drop(window);
-                    continue;
+                if let Some(window_id) = message.0 {
+                    if window.window.id() != window_id {
+                        continue;
+                    }
                 }
+
+                window.window.request_redraw();
+
+                let thread = inner_lua.create_thread(callback).unwrap();
+                inner_lua
+                    .as_ref()
+                    .push_thread_back(thread, message.1)
+                    .into_lua_err()
+                    .unwrap();
             }
-
-            window.window.request_redraw();
-            drop(window);
-
-            let thread = inner_lua.create_thread(callback).unwrap();
-            inner_lua
-                .as_ref()
-                .push_thread_back(thread, message.1)
-                .into_lua_err()
-                .unwrap();
 
             tokio::time::sleep(Duration::ZERO).await;
         }
     });
+
+    let run = {
+        let event_loop_started = EVENT_LOOP_STARTED.lock().unwrap();
+        !(*event_loop_started)
+    };
+
+    if run {
+        winit_run(lua, ()).await?;
+    }
 
     create_connection_handler(lua, shutdown_tx)
 }

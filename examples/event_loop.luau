@@ -17,5 +17,3 @@ handle = wry.event_loop(window, function(msg)
 		handle.stop()
 	end
 end)
-
-wry.run()

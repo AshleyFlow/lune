@@ -8,7 +8,7 @@
 	local handle
 
 	handle = Wry.event_loop(window, function(msg)
-		if msg == "CloseRequested" then
+		if msg.event_type == "CloseRequested" then
 			window:close()
 			handle.stop()
 		end

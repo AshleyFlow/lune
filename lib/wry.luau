@@ -16,7 +16,7 @@
 
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == "CloseRequested" then
+		if msg.event_type == "CloseRequested" then
 			handle.stop()
 		end
 	end)
@@ -118,14 +118,14 @@
 	```lua
 	local handle
 	handle = Wry.event_loop(window, function(msg)
-		if msg == "CloseRequested" then
+		if msg.event_type == "CloseRequested" then
 			window:close()
 			handle.stop()
-		elseif msg == "KeyCode" then
+		elseif msg.event_type == "KeyCode" then
 			print(msg)
-		elseif msg == "MouseButton" then
+		elseif msg.event_type == "MouseButton" then
 			print(msg)
-		elseif msg == "CursorMoved" then
+		elseif msg.event_type == "CursorMoved" then
 			print(msg)
 		end
 	end)

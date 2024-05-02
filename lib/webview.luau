@@ -27,6 +27,9 @@
 
 	Similar to `WebView:evaluate(...)`, but does not yield and does not return any result
 
+	### Bug(s)
+	* Will not work if you run it before calling wry.run()
+
 	@param script string
 ]=]
 
@@ -35,6 +38,9 @@
 	@within WebView
 
 	Similar to `WebView:evaluate(...)`, but instead of yielding to return result, it passes the result to the callback function
+
+	### Bug(s)
+	* Will not work if you run it before calling wry.run()
 
 	@param script string
 	@param callback (result: unknown) -> ()
@@ -48,6 +54,7 @@
 	Runs the provided javascript code through the webview and returns the last statement as a lua value
 
 	### Bug(s)
+	* Will yield forever if you run it before calling wry.run()
 	* Will yield forever if you run it while custom protocol is sending response to webview for **loading a page**
 
 	### Example

@@ -15,6 +15,9 @@ use std::{
 };
 use wry::WebViewBuilder;
 
+#[cfg(target_os = "linux")]
+use wry::WebViewBuilderExtUnix;
+
 pub fn create<'lua>(
     lua: &'lua Lua,
     values: LuaMultiValue<'lua>,
@@ -25,8 +28,13 @@ pub fn create<'lua>(
     let config = LuaWebViewConfig::from_lua(field2.clone(), lua)?;
     let mut window = field1.as_userdata().unwrap().borrow_mut::<LuaWindow>()?;
 
-    let mut webview_builder =
-        WebViewBuilder::new(&window.window).with_devtools(config.with_devtools);
+    #[cfg(not(target_os = "linux"))]
+    let mut webview_builder = WebViewBuilder::new(&window.window);
+
+    #[cfg(target_os = "linux")]
+    let mut webview_builder = WebViewBuilder::new_gtk(window.window.gtk_window());
+
+    webview_builder = webview_builder.with_devtools(config.with_devtools);
 
     let mut init_script = LuaWebViewScript::new();
     init_script.write(JAVASCRIPT_API);

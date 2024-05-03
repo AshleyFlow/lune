@@ -152,7 +152,7 @@ rbx_xml = { optional = true, version = "0.13.2" }
 
 
 ### UI
-wry = { version = "0.39.3", features = ["devtools"] }
+wry = { version = "0.39.3", features = ["devtools", "linux-body"] }
 tao = "0.27.1"
 
 [target.'cfg(windows)'.dependencies]

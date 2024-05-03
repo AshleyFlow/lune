@@ -72,3 +72,35 @@ Download the executable from [Releases](https://github.com/HighFlowey/luneweb/re
 ### Building
 
 `git clone` this repo and use `cargo build --release` to build an executable, the executable can be found in ./target/release/, now you cann add the executable to PATH
+
+## Platform-specific notes
+
+Here is the underlying web engine each platform uses, and some dependencies you might need to install.
+
+### Linux
+
+LuneWeb needs WebKitGTK for WebView. So please make sure the following packages are installed:
+
+#### Arch Linux / Manjaro
+
+`sudo pacman -S webkit2gtk-4.1`
+
+Debian / Ubuntu:
+
+`sudo apt install libwebkit2gtk-4.1-dev`
+
+Fedora:
+
+`sudo dnf install gtk3-devel webkit2gtk4.1-devel`
+
+---
+
+#### macOS
+
+WebKit is native on macOS so everything should be fine.
+
+---
+
+#### Windows
+
+WebView2 provided by Microsoft Edge Chromium is used. So wry supports Windows 7, 8, 10 and 11.

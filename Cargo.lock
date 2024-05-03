@@ -2141,6 +2141,7 @@ dependencies = [
  "env_logger",
  "futures-util",
  "glam",
+ "gtk",
  "http 1.1.0",
  "http-body-util",
  "hyper 1.3.1",

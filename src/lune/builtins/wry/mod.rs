@@ -8,6 +8,7 @@ use mlua::prelude::*;
 use mlua_luau_scheduler::{LuaSchedulerExt, LuaSpawnExt};
 use once_cell::sync::Lazy;
 use std::{
+    borrow::Borrow,
     cell::RefCell,
     rc::Weak,
     sync::{Arc, Mutex},
@@ -79,6 +80,18 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
 
     *event_loop_started = true;
 
+    #[cfg(target_os = "linux")]
+    if let Err(err) = gtk::init() {
+        return Err(LuaError::RuntimeError(err.to_string()));
+    } else {
+        lua.spawn_local(async {
+            #[cfg(target_os = "linux")]
+            while gtk::events_pending() {
+                gtk::main_iteration_do(false);
+            }
+        });
+    }
+
     lua.spawn_local(async {
         loop {
             let mut message: (Option<WindowId>, EventLoopMessage) =
@@ -87,93 +100,117 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
             EVENT_LOOP.with(|event_loop| {
                 let mut event_loop = event_loop.borrow_mut();
 
-                event_loop.run_return(|event, _elwt, flow| {
-                    *flow = tao::event_loop::ControlFlow::Exit;
+                event_loop.run_return(|mut event, _elwt, flow| {
+                    #[cfg(target_os = "linux")]
+                    {
+                        *flow = tao::event_loop::ControlFlow::Poll;
+                    }
 
-                    match event {
-                        tao::event::Event::UserEvent((window_id, msg)) => {
-                            message = (Some(window_id), msg);
-                        }
-                        tao::event::Event::WindowEvent {
-                            window_id,
-                            event: tao::event::WindowEvent::CloseRequested,
-                            ..
-                        } => {
-                            message = (Some(window_id), EventLoopMessage::close_requested());
-                        }
-                        tao::event::Event::WindowEvent {
-                            window_id,
-                            event:
-                                tao::event::WindowEvent::CursorMoved {
-                                    device_id: _,
-                                    position,
-                                    ..
-                                },
-                            ..
-                        } => {
-                            message = (
-                                Some(window_id),
-                                EventLoopMessage::cursor_moved(position.x, position.y),
-                            );
-                        }
-                        tao::event::Event::WindowEvent {
-                            window_id,
-                            event:
-                                tao::event::WindowEvent::MouseInput {
-                                    device_id: _,
-                                    state,
-                                    button,
-                                    ..
-                                },
-                            ..
-                        } => {
-                            let button = match button {
-                                tao::event::MouseButton::Left => Some("left".to_string()),
-                                tao::event::MouseButton::Right => Some("right".to_string()),
-                                tao::event::MouseButton::Middle => Some("middle".to_string()),
-                                _ => None,
-                            };
+                    #[cfg(not(target_os = "linux"))]
+                    {
+                        *flow = tao::event_loop::ControlFlow::Exit;
+                    }
 
-                            if let Some(button) = button {
-                                let pressed = match state {
-                                    tao::event::ElementState::Pressed => true,
-                                    tao::event::ElementState::Released => false,
-                                    _ => false,
+                    event = {
+                        match event.borrow() {
+                            tao::event::Event::UserEvent((window_id, msg)) => {
+                                message = (Some(*window_id), msg.clone());
+                            }
+                            tao::event::Event::WindowEvent {
+                                window_id,
+                                event: tao::event::WindowEvent::CloseRequested,
+                                ..
+                            } => {
+                                message = (Some(*window_id), EventLoopMessage::close_requested());
+                            }
+                            tao::event::Event::WindowEvent {
+                                window_id,
+                                event:
+                                    tao::event::WindowEvent::CursorMoved {
+                                        device_id: _,
+                                        position,
+                                        ..
+                                    },
+                                ..
+                            } => {
+                                message = (
+                                    Some(*window_id),
+                                    EventLoopMessage::cursor_moved(position.x, position.y),
+                                );
+                            }
+                            tao::event::Event::WindowEvent {
+                                window_id,
+                                event:
+                                    tao::event::WindowEvent::MouseInput {
+                                        device_id: _,
+                                        state,
+                                        button,
+                                        ..
+                                    },
+                                ..
+                            } => {
+                                let button = match button {
+                                    tao::event::MouseButton::Left => Some("left".to_string()),
+                                    tao::event::MouseButton::Right => Some("right".to_string()),
+                                    tao::event::MouseButton::Middle => Some("middle".to_string()),
+                                    _ => None,
+                                };
+
+                                if let Some(button) = button {
+                                    let pressed = match state {
+                                        tao::event::ElementState::Pressed => true,
+                                        tao::event::ElementState::Released => false,
+                                        _ => false,
+                                    };
+
+                                    message = (
+                                        Some(*window_id),
+                                        EventLoopMessage::mouse_button(button, pressed),
+                                    );
+                                }
+                            }
+                            tao::event::Event::WindowEvent {
+                                window_id,
+                                event:
+                                    tao::event::WindowEvent::KeyboardInput {
+                                        device_id: _,
+                                        event,
+                                        is_synthetic: _,
+                                        ..
+                                    },
+                                ..
+                            } => {
+                                let keycode: String = format!("{}", event.physical_key);
+
+                                let pressed = if event.repeat {
+                                    true
+                                } else {
+                                    match event.state {
+                                        tao::event::ElementState::Pressed => true,
+                                        tao::event::ElementState::Released => false,
+                                        _ => false,
+                                    }
                                 };
 
                                 message = (
-                                    Some(window_id),
-                                    EventLoopMessage::mouse_button(button, pressed),
+                                    Some(*window_id),
+                                    EventLoopMessage::keycode(keycode, pressed),
                                 );
                             }
-                        }
-                        tao::event::Event::WindowEvent {
-                            window_id,
-                            event:
-                                tao::event::WindowEvent::KeyboardInput {
-                                    device_id: _,
-                                    event,
-                                    is_synthetic: _,
-                                    ..
-                                },
-                            ..
-                        } => {
-                            let keycode: String = format!("{}", event.physical_key);
+                            _ => {}
+                        };
 
-                            let pressed = if event.repeat {
-                                true
-                            } else {
-                                match event.state {
-                                    tao::event::ElementState::Pressed => true,
-                                    tao::event::ElementState::Released => false,
-                                    _ => false,
-                                }
-                            };
+                        event
+                    };
 
-                            message =
-                                (Some(window_id), EventLoopMessage::keycode(keycode, pressed));
-                        }
-                        _ => {}
+                    #[cfg(target_os = "linux")]
+                    if let tao::event::Event::WindowEvent { .. } = event.borrow() {
+                        *flow = tao::event_loop::ControlFlow::Exit;
+                    }
+
+                    #[cfg(target_os = "linux")]
+                    if EVENT_LOOP_SENDER.is_closed() {
+                        *flow = tao::event_loop::ControlFlow::Exit;
                     }
                 });
             });

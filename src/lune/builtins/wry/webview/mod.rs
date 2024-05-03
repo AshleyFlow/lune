@@ -16,6 +16,8 @@ use std::{
 use wry::WebViewBuilder;
 
 #[cfg(target_os = "linux")]
+use gtk::prelude::BoxExt;
+#[cfg(target_os = "linux")]
 use tao::platform::unix::WindowExtUnix;
 #[cfg(target_os = "linux")]
 use wry::WebViewBuilderExtUnix;
@@ -34,7 +36,15 @@ pub fn create<'lua>(
     let mut webview_builder = WebViewBuilder::new(&window.window);
 
     #[cfg(target_os = "linux")]
-    let mut webview_builder = WebViewBuilder::new_gtk(window.window.gtk_window());
+    let gtk_fixed = {
+        let vbox = window.window.default_vbox().unwrap(); // tao adds a gtk::Box by default
+        let fixed = gtk::Fixed::new();
+        vbox.pack_start(&fixed, true, true, 0);
+        fixed
+    };
+
+    #[cfg(target_os = "linux")]
+    let mut webview_builder = WebViewBuilder::new_gtk(&gtk_fixed);
 
     webview_builder = webview_builder.with_devtools(config.with_devtools);
 

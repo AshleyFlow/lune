@@ -16,6 +16,8 @@ use std::{
 use wry::WebViewBuilder;
 
 #[cfg(target_os = "linux")]
+use tao::platform::unix::WindowExtUnix;
+#[cfg(target_os = "linux")]
 use wry::WebViewBuilderExtUnix;
 
 pub fn create<'lua>(

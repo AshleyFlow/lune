@@ -79,7 +79,11 @@ Here is the underlying web engine each platform uses, and some dependencies you 
 
 ### Linux
 
-Before 0.1.6, there is no support for Linux.
+#### since 0.1.6
+
+Linux is supported since 0.1.6
+
+The linux version is only tested on WSL2, which couldn't render webviews, so we don't know if webviews work on Linux or not.
 
 LuneWeb needs WebKitGTK for WebView. So please make sure the following packages are installed:
 

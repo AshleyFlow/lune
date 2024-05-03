@@ -79,6 +79,8 @@ Here is the underlying web engine each platform uses, and some dependencies you 
 
 ### Linux
 
+Before 0.1.6, there is no support for Linux.
+
 LuneWeb needs WebKitGTK for WebView. So please make sure the following packages are installed:
 
 #### Arch Linux / Manjaro
@@ -96,6 +98,8 @@ Fedora:
 ---
 
 #### macOS
+
+macOS is not tested.
 
 WebKit is native on macOS so everything should be fine.
 

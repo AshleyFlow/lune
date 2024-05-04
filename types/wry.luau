@@ -7,10 +7,21 @@ export type Dimension = {
 
 local wry = {}
 
+export type PixelHandler = (i: number, pixel: buffer) -> ()
+
+export type Pixels = {
+	render: (self: Pixels) -> (),
+	mutate_frame: (self: Pixels, handler: PixelHandler) -> (),
+	resize: (self: Pixels, width: number, height: number) -> (),
+
+	frame: { number },
+}
+
 export type Window = {
 	close: (self: Window) -> (),
 
 	webview: WebView?,
+	pixels: Pixels?,
 	size: Dimension,
 }
 
@@ -68,6 +79,10 @@ wry.create_window = function(config: WindowConfig): Window
 end
 
 wry.create_webview = function(window: Window, config: WebViewConfig): WebView
+	return nil :: any
+end
+
+wry.create_pixels = function(window: Window, width: number, height: number): Pixels
 	return nil :: any
 end
 

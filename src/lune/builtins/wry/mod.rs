@@ -1,4 +1,5 @@
 mod config;
+mod pixels;
 mod webview;
 mod window;
 
@@ -33,6 +34,7 @@ pub fn create(lua: &Lua) -> LuaResult<LuaTable> {
         .with_async_function("run", winit_run)?
         .with_function("create_window", winit_create_window)?
         .with_function("create_webview", winit_create_webview)?
+        .with_async_function("create_pixels", winit_create_pixels)?
         .build_readonly()
 }
 
@@ -54,6 +56,13 @@ pub fn winit_create_webview<'lua>(
     values: LuaMultiValue<'lua>,
 ) -> LuaResult<LuaAnyUserData<'lua>> {
     webview::create(lua, values)
+}
+
+pub async fn winit_create_pixels<'lua>(
+    lua: &'lua Lua,
+    values: LuaMultiValue<'lua>,
+) -> LuaResult<LuaAnyUserData<'lua>> {
+    pixels::create(lua, values).await
 }
 
 pub fn error_if_before_run(name: &str) -> Option<LuaError> {

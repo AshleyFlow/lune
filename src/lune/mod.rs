@@ -7,7 +7,7 @@ use std::{
     },
 };
 
-use mlua::Lua;
+use mlua::{Lua, StdLib};
 use mlua_luau_scheduler::Scheduler;
 
 mod builtins;
@@ -34,6 +34,8 @@ impl Runtime {
 
         lua.set_app_data(Rc::downgrade(&lua));
         lua.set_app_data(Vec::<String>::new());
+        lua.load_from_std_lib(StdLib::BUFFER)
+            .expect("Failed to load BUFFER lib");
 
         globals::inject_all(&lua).expect("Failed to inject globals");
 

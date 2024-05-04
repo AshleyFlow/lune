@@ -1,5 +1,5 @@
 use crate::lune::{
-    builtins::wry::{config::EventLoopMessage, webview::config::LuaWebView},
+    builtins::wry::{config::EventLoopMessage, pixels::LuaPixels, webview::config::LuaWebView},
     util::TableBuilder,
 };
 use mlua::prelude::*;

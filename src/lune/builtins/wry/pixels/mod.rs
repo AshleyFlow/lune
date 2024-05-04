@@ -17,9 +17,7 @@ impl LuaPixels {
 
         let size = window.window.inner_size();
         let surface_texture = SurfaceTexture::new(size.width, size.height, &window.window);
-        let pixels = Pixels::new_async(width, height, surface_texture)
-            .await
-            .unwrap();
+        let pixels = Pixels::new(width, height, surface_texture).unwrap();
 
         Self { pixels }
     }
@@ -52,7 +50,7 @@ impl LuaUserData for LuaPixels {
             },
         );
 
-        methods.add_method_mut("mutate_frame", |lua, this, handler: LuaFunction| {
+        methods.add_method_mut("_mutate_frame", |lua, this, handler: LuaFunction| {
             let frame_mut = this.pixels.frame_mut();
 
             for (i, pixel) in frame_mut.chunks_exact_mut(4).enumerate() {
@@ -62,6 +60,18 @@ impl LuaUserData for LuaPixels {
                 let new_pixel = lua.unpack::<BString>(LuaValue::UserData(buffer))?;
                 pixel.copy_from_slice(new_pixel.as_slice());
             }
+
+            Ok(())
+        });
+
+        methods.add_method_mut("mutate_frame", |lua, this, handler: LuaFunction| {
+            let frame_mut = this.pixels.frame_mut();
+
+            // let buffer = lua.create_buffer(&frame_mut)?;
+            let buffer = handler.call::<_, LuaAnyUserData>(())?;
+
+            let new_frame = lua.unpack::<BString>(LuaValue::UserData(buffer))?;
+            frame_mut.copy_from_slice(new_frame.as_slice());
 
             Ok(())
         });

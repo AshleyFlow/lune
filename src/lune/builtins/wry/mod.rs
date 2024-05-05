@@ -111,15 +111,7 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                 let mut event_loop = event_loop.borrow_mut();
 
                 event_loop.run_return(|mut event, _elwt, flow| {
-                    #[cfg(target_os = "linux")]
-                    {
-                        *flow = tao::event_loop::ControlFlow::Poll;
-                    }
-
-                    #[cfg(not(target_os = "linux"))]
-                    {
-                        *flow = tao::event_loop::ControlFlow::Exit;
-                    }
+                    *flow = tao::event_loop::ControlFlow::Poll;
 
                     event = {
                         match event.borrow() {
@@ -213,19 +205,17 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                         event
                     };
 
-                    #[cfg(target_os = "linux")]
                     if let tao::event::Event::WindowEvent { .. } = event.borrow() {
                         *flow = tao::event_loop::ControlFlow::Exit;
                     }
 
-                    #[cfg(target_os = "linux")]
-                    if EVENT_LOOP_SENDER.is_closed() {
+                    if EVENT_LOOP_SENDER.receiver_count() == 0 {
                         *flow = tao::event_loop::ControlFlow::Exit;
                     }
                 });
             });
 
-            if !EVENT_LOOP_SENDER.is_closed() {
+            if EVENT_LOOP_SENDER.receiver_count() > 0 {
                 EVENT_LOOP_SENDER.send(message).into_lua_err().unwrap();
             } else {
                 break;

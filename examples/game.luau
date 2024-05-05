@@ -5,15 +5,15 @@ local window = wry.create_window({
 })
 
 local pixels_size = {
-	x = 124,
-	y = 124,
-	buffer = 61504,
+	x = 26,
+	y = 26,
 }
 
 local pixels = wry.create_pixels(window, pixels_size.x, pixels_size.y)
 local handle: wry.Connection
 local old_size: wry.Dimension
-local frame = buffer.create(pixels_size.buffer)
+local frame = pixels.frame
+local frame_len = buffer.len(frame)
 
 handle = wry.event_loop(window, function(msg)
 	if msg.event_type == "CloseRequested" then
@@ -32,34 +32,27 @@ handle = wry.event_loop(window, function(msg)
 			y = math.floor(msg.position.y / size.y * pixels_size.y),
 		}
 
-		local s = os.clock()
+		for i = 0, frame_len - 1, 4 do
+			local x = math.floor(math.floor(i / 4) % pixels_size.x)
+			local y = math.floor(math.floor(i / 4) / pixels_size.x)
 
-		pixels:mutate_frame(function()
-			for i = 0, pixels_size.buffer - 1, 4 do
-				local x = math.floor(math.floor(i / 4) % pixels_size.x)
-				local y = math.floor(math.floor(i / 4) / pixels_size.x)
+			local same_x = x == position.x
+			local same_y = y == position.y
 
-				local same_x = x == position.x
-				local same_y = y == position.y
-
-				if same_x or same_y then
-					buffer.writeu8(frame, i + 0, 255)
-					buffer.writeu8(frame, i + 1, 255)
-					buffer.writeu8(frame, i + 2, 255)
-					buffer.writeu8(frame, i + 3, if same_x and same_y then 255 else 125)
-				else
-					buffer.writeu8(frame, i + 0, 75)
-					buffer.writeu8(frame, i + 1, 75)
-					buffer.writeu8(frame, i + 2, 75)
-					buffer.writeu8(frame, i + 3, 255)
-				end
+			if same_x or same_y then
+				buffer.writeu8(frame, i + 0, 255)
+				buffer.writeu8(frame, i + 1, 255)
+				buffer.writeu8(frame, i + 2, 255)
+				buffer.writeu8(frame, i + 3, if same_x and same_y then 255 else 125)
+			else
+				buffer.writeu8(frame, i + 0, 75)
+				buffer.writeu8(frame, i + 1, 75)
+				buffer.writeu8(frame, i + 2, 75)
+				buffer.writeu8(frame, i + 3, 255)
 			end
+		end
 
-			return frame
-		end)
-
+		-- pixels:mutate_frame(frame)
 		pixels:render()
-
-		print(os.clock() - s)
 	end
 end)

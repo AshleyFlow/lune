@@ -8,16 +8,15 @@ export type Dimension = {
 local wry = {}
 
 export type PixelHandler = (i: number, pixel: buffer) -> ()
-export type FrameHandler = () -> buffer
 
 export type Pixels = {
 	_mutate_frame: (self: Pixels, handler: PixelHandler) -> (),
+	mutate_frame: (self: Pixels, frame: buffer) -> (),
 
 	render: (self: Pixels) -> (),
-	mutate_frame: (self: Pixels, handler: FrameHandler) -> (),
 	resize: (self: Pixels, width: number, height: number) -> (),
 
-	frame: { number },
+	frame: buffer,
 }
 
 export type Window = {

@@ -111,7 +111,15 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                 let mut event_loop = event_loop.borrow_mut();
 
                 event_loop.run_return(|mut event, _elwt, flow| {
-                    *flow = tao::event_loop::ControlFlow::Poll;
+                    #[cfg(target_os = "linux")]
+                    {
+                        *flow = tao::event_loop::ControlFlow::Poll;
+                    }
+
+                    #[cfg(not(target_os = "linux"))]
+                    {
+                        *flow = tao::event_loop::ControlFlow::Exit;
+                    }
 
                     event = {
                         match event.borrow() {

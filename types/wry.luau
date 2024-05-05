@@ -5,6 +5,13 @@ export type Dimension = {
 	y: number,
 }
 
+export type RGBA = {
+	r: number,
+	g: number,
+	b: number,
+	a: number,
+}
+
 local wry = {}
 
 export type PixelHandler = (i: number, pixel: buffer) -> ()
@@ -15,6 +22,9 @@ export type Pixels = {
 
 	render: (self: Pixels) -> (),
 	resize: (self: Pixels, width: number, height: number) -> (),
+
+	draw_pixel: (self: Pixels, dimension: Dimension, rgba: RGBA) -> (),
+	draw_line: (self: Pixels, dimension1: Dimension, dimension2: Dimension, rgba: RGBA) -> (),
 
 	frame: buffer,
 }

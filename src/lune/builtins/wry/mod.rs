@@ -1,5 +1,6 @@
 mod config;
 mod pixels;
+pub mod usertypes;
 mod webview;
 mod window;
 

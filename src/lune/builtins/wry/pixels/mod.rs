@@ -1,4 +1,5 @@
-use super::window::config::LuaWindow;
+use super::{usertypes::LuaRGBA, window::config::LuaWindow};
+use crate::lune::builtins::wry::usertypes::LuaDimension;
 use bstr::BString;
 use mlua::prelude::*;
 use pixels::{Pixels, SurfaceTexture};
@@ -19,13 +20,19 @@ impl LuaPixels {
 
         let size = window.window.inner_size();
         let surface_texture = SurfaceTexture::new(size.width, size.height, &window.window);
-        let mut pixels = Pixels::new(width, height, surface_texture).into_lua_err()?;
-        let buffer = lua.create_buffer(&pixels.frame_mut())?;
+        let pixels = Pixels::new(width, height, surface_texture).into_lua_err()?;
+        let buffer = lua.create_buffer(pixels.frame())?;
 
         Ok(Self {
             pixels,
-            buffer: lua.create_registry_value(buffer).unwrap(),
+            buffer: lua.create_registry_value(buffer)?,
         })
+    }
+
+    pub fn update_buffer(&mut self, lua: &Lua) -> LuaResult<()> {
+        let buffer = lua.create_buffer(self.pixels.frame())?;
+        self.buffer = lua.create_registry_value(buffer)?;
+        Ok(())
     }
 }
 
@@ -76,6 +83,74 @@ impl LuaUserData for LuaPixels {
 
             this.pixels.render().into_lua_err()
         });
+
+        methods.add_method_mut(
+            "draw_pixel",
+            |lua, this, (dimension, rgba): (LuaDimension, LuaRGBA)| {
+                let width = this.pixels.texture().width() as usize;
+                let frame_mut = this.pixels.frame_mut();
+
+                for (i, pixel) in frame_mut.chunks_exact_mut(4).enumerate() {
+                    let x = i % width;
+                    let y = i / width;
+
+                    if x == dimension.x as usize && y == dimension.y as usize {
+                        pixel[0] = rgba.r;
+                        pixel[1] = rgba.g;
+                        pixel[2] = rgba.b;
+                        pixel[3] = rgba.a;
+                    }
+                }
+
+                this.update_buffer(lua)?;
+                this.pixels.render().into_lua_err()
+            },
+        );
+
+        methods.add_method_mut(
+            "draw_line",
+            |lua, this, (dimension1, dimension2, rgba): (LuaDimension, LuaDimension, LuaRGBA)| {
+                let width = this.pixels.texture().width() as i32;
+                let frame_mut = this.pixels.frame_mut();
+
+                let (mut x1, mut y1) = (dimension1.x as i32, dimension1.y as i32);
+                let (x2, y2) = (dimension2.x as i32, dimension2.y as i32);
+
+                let dx = (x2 - x1).abs();
+                let dy = -(y2 - y1).abs();
+                let sx = if x1 < x2 { 1 } else { -1 };
+                let sy = if y1 < y2 { 1 } else { -1 };
+                let mut err = dx + dy;
+
+                loop {
+                    // Calculate the index in the frame_mut array
+                    let index = (y1 * width + x1) * 4;
+                    if index < frame_mut.len() as i32 {
+                        // Set the pixel color
+                        frame_mut[index as usize..index as usize + 4]
+                            .copy_from_slice(&[rgba.r, rgba.g, rgba.b, rgba.a]);
+                    }
+
+                    // Check if we've reached the end point
+                    if x1 == x2 && y1 == y2 {
+                        break;
+                    }
+
+                    let e2 = 2 * err;
+                    if e2 >= dy {
+                        err += dy;
+                        x1 += sx;
+                    }
+                    if e2 <= dx {
+                        err += dx;
+                        y1 += sy;
+                    }
+                }
+
+                this.update_buffer(lua)?;
+                this.pixels.render().into_lua_err()
+            },
+        );
     }
 }
 

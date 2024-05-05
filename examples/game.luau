@@ -5,15 +5,15 @@ local window = wry.create_window({
 })
 
 local pixels_size = {
-	x = 26,
-	y = 26,
+	x = 1024 * 4,
+	y = 720 * 4,
 }
 
 local pixels = wry.create_pixels(window, pixels_size.x, pixels_size.y)
 local handle: wry.Connection
-local old_size: wry.Dimension
-local frame = pixels.frame
-local frame_len = buffer.len(frame)
+
+local old_size: wry.Dimension?
+local old_pos: wry.Dimension?
 
 handle = wry.event_loop(window, function(msg)
 	if msg.event_type == "CloseRequested" then
@@ -32,27 +32,24 @@ handle = wry.event_loop(window, function(msg)
 			y = math.floor(msg.position.y / size.y * pixels_size.y),
 		}
 
-		for i = 0, frame_len - 1, 4 do
-			local x = math.floor(math.floor(i / 4) % pixels_size.x)
-			local y = math.floor(math.floor(i / 4) / pixels_size.x)
-
-			local same_x = x == position.x
-			local same_y = y == position.y
-
-			if same_x or same_y then
-				buffer.writeu8(frame, i + 0, 255)
-				buffer.writeu8(frame, i + 1, 255)
-				buffer.writeu8(frame, i + 2, 255)
-				buffer.writeu8(frame, i + 3, if same_x and same_y then 255 else 125)
-			else
-				buffer.writeu8(frame, i + 0, 75)
-				buffer.writeu8(frame, i + 1, 75)
-				buffer.writeu8(frame, i + 2, 75)
-				buffer.writeu8(frame, i + 3, 255)
-			end
+		if old_pos then
+			pixels:draw_line(old_pos, position, {
+				r = 255,
+				g = 255,
+				b = 0,
+				a = 255 / 2,
+			})
+		else
+			pixels:draw_pixel(position, {
+				r = 255,
+				g = 255,
+				b = 0,
+				a = 255 / 2,
+			})
 		end
 
-		-- pixels:mutate_frame(frame)
+		old_pos = position
+
 		pixels:render()
 	end
 end)

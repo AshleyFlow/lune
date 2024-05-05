@@ -44,12 +44,7 @@ thread_local! {
 }
 
 pub static EVENT_LOOP_STARTED: Lazy<Arc<Mutex<bool>>> = Lazy::new(|| Arc::new(Mutex::new(false)));
-
-#[cfg(target_os = "linux")]
 pub static EVENT_LOOP_INTERVAL: Duration = Duration::from_millis(16);
-
-#[cfg(not(target_os = "linux"))]
-pub static EVENT_LOOP_INTERVAL: Duration = Duration::ZERO;
 
 pub fn winit_create_window<'lua>(
     lua: &'lua Lua,

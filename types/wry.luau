@@ -22,9 +22,12 @@ export type Pixels = {
 
 	render: (self: Pixels) -> (),
 	resize: (self: Pixels, width: number, height: number) -> (),
+	window_to_pixel_coordinates: (self: Pixels, dimension: Dimension) -> Dimension,
 
 	draw_pixel: (self: Pixels, dimension: Dimension, rgba: RGBA) -> (),
 	draw_line: (self: Pixels, dimension1: Dimension, dimension2: Dimension, rgba: RGBA) -> (),
+	draw_rectangle: (self: Pixels, dimension1: Dimension, dimension2: Dimension, rgba: RGBA) -> (),
+	clear_frame: (self: Pixels) -> (),
 
 	frame: buffer,
 }

@@ -8,6 +8,17 @@ pub struct LuaDimension {
     pub y: f64,
 }
 
+impl<'lua> IntoLua<'lua> for LuaDimension {
+    fn into_lua(self, lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
+        let t = lua.create_table()?;
+
+        t.set("x", self.x)?;
+        t.set("y", self.y)?;
+
+        t.into_lua(lua)
+    }
+}
+
 impl<'lua> FromLua<'lua> for LuaDimension {
     fn from_lua(value: LuaValue<'lua>, _lua: &'lua Lua) -> LuaResult<Self> {
         if let Some(t) = value.as_table() {

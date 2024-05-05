@@ -34,6 +34,22 @@ impl LuaPixels {
         self.buffer = lua.create_registry_value(buffer)?;
         Ok(())
     }
+
+    pub fn is_point_inside_rectangle(
+        x1: usize,
+        y1: usize,
+        x2: usize,
+        y2: usize,
+        x: usize,
+        y: usize,
+    ) -> bool {
+        // Ensure x1 is the smaller x-coordinate and x2 is the larger
+        let (x1, x2) = if x1 > x2 { (x2, x1) } else { (x1, x2) };
+        // Ensure y1 is the smaller y-coordinate and y2 is the larger
+        let (y1, y2) = if y1 > y2 { (y2, y1) } else { (y1, y2) };
+
+        x > x1 && x < x2 && y > y1 && y < y2
+    }
 }
 
 impl LuaUserData for LuaPixels {
@@ -88,6 +104,31 @@ impl LuaUserData for LuaPixels {
             this.pixels.render().into_lua_err()
         });
 
+        methods.add_method_mut("clear_frame", |lua, this, _: ()| {
+            let frame_mut = this.pixels.frame_mut();
+
+            for value in frame_mut.iter_mut() {
+                *value = 0;
+            }
+
+            this.update_buffer(lua)
+        });
+
+        methods.add_method(
+            "window_to_pixel_coordinates",
+            |_lua, this, dimension: LuaDimension| {
+                let dim = this
+                    .pixels
+                    .window_pos_to_pixel((dimension.x as f32, dimension.y as f32))
+                    .unwrap_or_else(|pos| this.pixels.clamp_pixel_pos(pos));
+
+                Ok(LuaDimension {
+                    x: dim.0 as f64,
+                    y: dim.1 as f64,
+                })
+            },
+        );
+
         methods.add_method_mut(
             "draw_pixel",
             |lua, this, (dimension, rgba): (LuaDimension, LuaRGBA)| {
@@ -106,8 +147,38 @@ impl LuaUserData for LuaPixels {
                     }
                 }
 
-                this.update_buffer(lua)?;
-                this.pixels.render().into_lua_err()
+                this.update_buffer(lua)
+            },
+        );
+
+        methods.add_method_mut(
+            "draw_rectangle",
+            |lua, this, (dimension1, dimension2, rgba): (LuaDimension, LuaDimension, LuaRGBA)| {
+                let width = this.pixels.texture().width() as usize;
+                let frame_mut = this.pixels.frame_mut();
+
+                for (i, pixel) in frame_mut.chunks_exact_mut(4).enumerate() {
+                    let x = i % width;
+                    let y = i / width;
+
+                    let is_inside_rectangle = Self::is_point_inside_rectangle(
+                        dimension1.x as usize,
+                        dimension1.y as usize,
+                        dimension2.x as usize,
+                        dimension2.y as usize,
+                        x,
+                        y,
+                    );
+
+                    if is_inside_rectangle {
+                        pixel[0] = rgba.r;
+                        pixel[1] = rgba.g;
+                        pixel[2] = rgba.b;
+                        pixel[3] = rgba.a;
+                    }
+                }
+
+                this.update_buffer(lua)
             },
         );
 
@@ -151,8 +222,7 @@ impl LuaUserData for LuaPixels {
                     }
                 }
 
-                this.update_buffer(lua)?;
-                this.pixels.render().into_lua_err()
+                this.update_buffer(lua)
             },
         );
     }

@@ -262,6 +262,7 @@ pub async fn winit_event_loop<'lua>(
                 },
                 res = shutdown_rx.changed() => {
                     if res.is_ok() {
+                        drop(listener);
                         break;
                     }
                 }

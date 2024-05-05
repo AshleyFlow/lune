@@ -7,10 +7,8 @@ wry.create_webview(window, {
 })
 
 handle = wry.event_loop(window, function(msg)
-	if msg == wry.events.CloseRequested then
+	if msg.event_type == "CloseRequested" then
 		window:close()
-		handle.stop()
+		handle.disconnect()
 	end
 end)
-
-wry.run()

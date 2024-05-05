@@ -26,7 +26,7 @@
 	@method evaluate_noresult
 	@within WebView
 
-	Similar to `WebView:evaluate(...)`, but does not yield and does not return any result
+	Similar to [WebView:evaluate], but does not yield and does not return any result
 
 	@param script string
 ]=]
@@ -36,7 +36,7 @@
 	@method evaluate_callback
 	@within WebView
 
-	Similar to `WebView:evaluate(...)`, but instead of yielding to return result, it passes the result to the callback function
+	Similar to [WebView:evaluate], but instead of yielding to return result, it passes the result to the callback function
 
 	@param script string
 	@param callback (result: unknown) -> ()

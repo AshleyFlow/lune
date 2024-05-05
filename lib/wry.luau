@@ -33,6 +33,15 @@
 ]=]
 
 --[=[
+	@interface RGBA
+	@within Wry
+	.r number
+	.g number
+	.b number
+	.a number
+]=]
+
+--[=[
 	@interface WindowConfig
 	@within Wry
 	.title string?
@@ -78,6 +87,7 @@
 	@function create_webview
 	@within Wry
 
+	@param window Window
 	@param config WebViewConfig
 	@return WebView
 
@@ -87,6 +97,22 @@
 	Wry.create_webview(window, {
 		html = "<h1>Hello, Lune!</h1>"
 	})
+	```
+]=]
+
+--[=[
+	@function create_pixels
+	@within Wry
+
+	@param window Window
+	@param width number
+	@param height number
+	@return Pixels
+
+	## Example
+
+	```lua
+	local pixels = Wry.create_pixels(window)
 	```
 ]=]
 

@@ -129,8 +129,10 @@
 --[=[
 	@interface Connection
 	@within Wry
-	.stop () -> ()
-	.is_running () -> boolean
+	.stop () -> () -- binding to [Connection.disconnect]
+	.is_running () -> boolean -- binding to [Connection.connected]
+	.disconnect () -> ()
+	.running boolean
 ]=]
 
 --[=[

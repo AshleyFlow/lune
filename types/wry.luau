@@ -81,6 +81,10 @@ export type WindowEvent = {
 }
 
 export type Connection = {
+	disconnect: () -> (),
+	connected: boolean,
+
+	-- for backward compatibility
 	stop: () -> (),
 	is_running: () -> boolean,
 }

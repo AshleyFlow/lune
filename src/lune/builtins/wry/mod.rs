@@ -209,6 +209,10 @@ pub async fn winit_run(lua: &Lua, _: ()) -> LuaResult<()> {
                         *flow = tao::event_loop::ControlFlow::Exit;
                     }
 
+                    if let tao::event::Event::UserEvent(_) = event.borrow() {
+                        *flow = tao::event_loop::ControlFlow::Exit;
+                    }
+
                     if EVENT_LOOP_SENDER.receiver_count() == 0 {
                         *flow = tao::event_loop::ControlFlow::Exit;
                     }
@@ -262,7 +266,6 @@ pub async fn winit_event_loop<'lua>(
                 },
                 res = shutdown_rx.changed() => {
                     if res.is_ok() {
-                        drop(listener);
                         break;
                     }
                 }

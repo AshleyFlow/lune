@@ -1,5 +1,5 @@
 local wry = require("@luneweb/wry")
-local window, handle = wry.create_window({}), nil
+local window, handle: wry.Connection = wry.create_window({}), nil
 
 local webview = wry.create_webview(window, {
 	with_devtools = true,
@@ -29,7 +29,8 @@ local webview = wry.create_webview(window, {
 handle = wry.event_loop(window, function(msg)
 	if msg.event_type == "CloseRequested" then
 		window:close()
-		handle.stop()
+		handle.disconnect()
+		print(handle.connected)
 	end
 end)
 

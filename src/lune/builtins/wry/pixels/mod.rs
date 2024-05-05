@@ -64,6 +64,8 @@ impl LuaUserData for LuaPixels {
                 pixel.copy_from_slice(new_pixel.as_slice());
             }
 
+            this.update_buffer(lua)?;
+
             Ok(())
         });
 
@@ -71,6 +73,8 @@ impl LuaUserData for LuaPixels {
             let frame_mut = this.pixels.frame_mut();
             let new_frame = lua.unpack::<BString>(LuaValue::UserData(buffer))?;
             frame_mut.copy_from_slice(new_frame.as_slice());
+
+            this.update_buffer(lua)?;
 
             Ok(())
         });

@@ -5,36 +5,37 @@ local window = wry.create_window({
 })
 
 local pixels_size = {
-	x = 64,
-	y = 64,
+	x = 124,
+	y = 124,
+	buffer = 61504,
 }
 
 local pixels = wry.create_pixels(window, pixels_size.x, pixels_size.y)
 local handle: wry.Connection
 local old_size: wry.Dimension
-local frame = buffer.create(16384)
+local frame = buffer.create(pixels_size.buffer)
 
 handle = wry.event_loop(window, function(msg)
 	if msg.event_type == "CloseRequested" then
 		window:close()
 		handle.stop()
 	elseif msg.event_type == "CursorMoved" then
-		local started = os.clock()
 		local size = window.size
 
 		if old_size and size ~= old_size then
 			pixels:resize(window.size.x, window.size.y)
+			old_size = size
 		end
-
-		old_size = size
 
 		local position = {
 			x = math.floor(msg.position.x / size.x * pixels_size.x),
 			y = math.floor(msg.position.y / size.y * pixels_size.y),
 		}
 
+		local s = os.clock()
+
 		pixels:mutate_frame(function()
-			for i = 0, buffer.len(frame) - 1, 4 do
+			for i = 0, pixels_size.buffer - 1, 4 do
 				local x = math.floor(math.floor(i / 4) % pixels_size.x)
 				local y = math.floor(math.floor(i / 4) / pixels_size.x)
 
@@ -59,7 +60,6 @@ handle = wry.event_loop(window, function(msg)
 
 		pixels:render()
 
-		local finished = os.clock()
-		print("took", finished - started)
+		print(os.clock() - s)
 	end
 end)

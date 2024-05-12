@@ -249,11 +249,6 @@ impl RequireContext {
         alias: impl AsRef<str>,
         module: impl AsRef<str>,
     ) -> LuaResult<LuaMultiValue<'lua>> {
-        // let library: LuneStandardLibrary = match name.as_ref().parse() {
-        //     Err(e) => return Err(LuaError::runtime(e)),
-        //     Ok(b) => b,
-        // };
-
         let lua_alias = self.global_context.get_alias(alias.as_ref()).unwrap();
         let library = lua_alias.children.get(module.as_ref()).unwrap();
         let cache_name = alias.as_ref().to_owned() + module.as_ref();
@@ -277,7 +272,7 @@ impl RequireContext {
 
         let result = library(lua)?.into_lua(lua)?;
 
-        cache.insert(cache_name, lua.create_registry_value(result.clone()));
+        cache.insert(cache_name, lua.create_registry_value(vec![result.clone()]));
 
         Ok(LuaMultiValue::from_vec(vec![result]))
     }

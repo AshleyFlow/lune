@@ -1,12 +1,13 @@
 use mlua::prelude::*;
 
+use crate::context::GlobalsContext;
 use lune_utils::get_version_string;
 
 struct Version(String);
 
 impl LuaUserData for Version {}
 
-pub fn create(lua: &Lua) -> LuaResult<LuaValue> {
+pub fn create<'lua>(lua: &'lua Lua, _: &'lua GlobalsContext) -> LuaResult<LuaValue<'lua>> {
     let v = match lua.app_data_ref::<Version>() {
         Some(v) => v.0.to_string(),
         None => env!("CARGO_PKG_VERSION").to_string(),

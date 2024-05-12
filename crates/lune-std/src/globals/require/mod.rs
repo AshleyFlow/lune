@@ -3,6 +3,7 @@ use mlua::prelude::*;
 use lune_utils::TableBuilder;
 
 mod context;
+use crate::context::GlobalsContext;
 use context::RequireContext;
 
 mod alias;
@@ -13,8 +14,8 @@ const REQUIRE_IMPL: &str = r"
 return require(source(), ...)
 ";
 
-pub fn create(lua: &Lua) -> LuaResult<LuaValue> {
-    lua.set_app_data(RequireContext::new());
+pub fn create<'lua>(lua: &'lua Lua, context: &'lua GlobalsContext) -> LuaResult<LuaValue<'lua>> {
+    lua.set_app_data(RequireContext::new(context));
 
     /*
         Require implementation needs a few workarounds:
@@ -76,12 +77,19 @@ async fn require<'lua>(
         .context("Failed to parse require path as string")?
         .to_string();
 
-    let context = lua
+    let context: mlua::AppDataRef<RequireContext> = lua
         .app_data_ref()
         .expect("Failed to get RequireContext from app data");
 
-    if let Some(builtin_name) = path.strip_prefix("@lune/").map(str::to_ascii_lowercase) {
-        library::require(lua, &context, &builtin_name)
+    let alias = if path.starts_with('@') {
+        let tokens = path.trim_start_matches('@').split_once('/').unwrap();
+        Some(tokens)
+    } else {
+        None
+    };
+
+    if let Some(alias) = alias {
+        library::require(lua, &context, alias.0, alias.1)
     } else if let Some(aliased_path) = path.strip_prefix('@') {
         let (alias, path) = aliased_path.split_once('/').ok_or(LuaError::runtime(
             "Require with custom alias must contain '/' delimiter",

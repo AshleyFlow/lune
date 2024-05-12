@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use mlua::prelude::*;
 
+use crate::context::GlobalsContext;
+
 /**
     A standard global provided by Lune.
 */
@@ -49,13 +51,13 @@ impl LuneStandardGlobal {
     */
     #[rustfmt::skip]
     #[allow(unreachable_patterns)]
-    pub fn create<'lua>(&self, lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
+    pub fn create<'lua>(&self, lua: &'lua Lua, context: &'lua GlobalsContext) -> LuaResult<LuaValue<'lua>> {
         let res = match self {
-            Self::GTable => crate::globals::g_table::create(lua),
-            Self::Print => crate::globals::print::create(lua),
-            Self::Require => crate::globals::require::create(lua),
-            Self::Version => crate::globals::version::create(lua),
-            Self::Warn => crate::globals::warn::create(lua),
+            Self::GTable => crate::globals::g_table::create(lua, context),
+            Self::Print => crate::globals::print::create(lua, context),
+            Self::Require => crate::globals::require::create(lua, context),
+            Self::Version => crate::globals::version::create(lua, context),
+            Self::Warn => crate::globals::warn::create(lua, context),
         };
         match res {
             Ok(v) => Ok(v),

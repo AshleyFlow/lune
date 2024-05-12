@@ -17,7 +17,7 @@ use tokio::{
 
 use lune_utils::path::{clean_path, clean_path_and_make_absolute};
 
-use crate::library::LuneStandardLibrary;
+use crate::context::GlobalsContext;
 
 /**
     Context containing cached results for all `require` operations.
@@ -27,7 +27,8 @@ use crate::library::LuneStandardLibrary;
 */
 #[derive(Debug, Clone)]
 pub(super) struct RequireContext {
-    libraries: Arc<AsyncMutex<HashMap<LuneStandardLibrary, LuaResult<LuaRegistryKey>>>>,
+    pub global_context: GlobalsContext,
+    libraries: Arc<AsyncMutex<HashMap<String, LuaResult<LuaRegistryKey>>>>,
     results: Arc<AsyncMutex<HashMap<PathBuf, LuaResult<LuaRegistryKey>>>>,
     pending: Arc<AsyncMutex<HashMap<PathBuf, Sender<()>>>>,
 }
@@ -40,8 +41,9 @@ impl RequireContext {
         context should be created per [`Lua`] struct, creating more
         than one context may lead to undefined require-behavior.
     */
-    pub fn new() -> Self {
+    pub fn new(context: &GlobalsContext) -> Self {
         Self {
+            global_context: context.clone(),
             libraries: Arc::new(AsyncMutex::new(HashMap::new())),
             results: Arc::new(AsyncMutex::new(HashMap::new())),
             pending: Arc::new(AsyncMutex::new(HashMap::new())),
@@ -244,19 +246,24 @@ impl RequireContext {
     pub fn load_library<'lua>(
         &self,
         lua: &'lua Lua,
-        name: impl AsRef<str>,
+        alias: impl AsRef<str>,
+        module: impl AsRef<str>,
     ) -> LuaResult<LuaMultiValue<'lua>> {
-        let library: LuneStandardLibrary = match name.as_ref().parse() {
-            Err(e) => return Err(LuaError::runtime(e)),
-            Ok(b) => b,
-        };
+        // let library: LuneStandardLibrary = match name.as_ref().parse() {
+        //     Err(e) => return Err(LuaError::runtime(e)),
+        //     Ok(b) => b,
+        // };
+
+        let lua_alias = self.global_context.get_alias(alias.as_ref()).unwrap();
+        let library = lua_alias.children.get(module.as_ref()).unwrap();
+        let cache_name = alias.as_ref().to_owned() + module.as_ref();
 
         let mut cache = self
             .libraries
             .try_lock()
             .expect("RequireContext may not be used from multiple threads");
 
-        if let Some(res) = cache.get(&library) {
+        if let Some(res) = cache.get(&cache_name) {
             return match res {
                 Err(e) => return Err(e.clone()),
                 Ok(key) => {
@@ -268,22 +275,10 @@ impl RequireContext {
             };
         };
 
-        let result = library.module(lua);
+        let result = library(lua)?.into_lua(lua)?;
 
-        cache.insert(
-            library,
-            match result.clone() {
-                Err(e) => Err(e),
-                Ok(multi) => {
-                    let multi_vec = multi.into_vec();
-                    let multi_key = lua
-                        .create_registry_value(multi_vec)
-                        .expect("Failed to store require result in registry - out of memory");
-                    Ok(multi_key)
-                }
-            },
-        );
+        cache.insert(cache_name, lua.create_registry_value(result.clone()));
 
-        result
+        Ok(LuaMultiValue::from_vec(vec![result]))
     }
 }

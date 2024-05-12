@@ -9,6 +9,7 @@ use std::{
     },
 };
 
+use lune_std::context::GlobalsContextBuilder;
 use mlua::Lua;
 use mlua_luau_scheduler::Scheduler;
 
@@ -47,7 +48,8 @@ impl Runtime {
             feature = "std-task",
         ))]
         {
-            lune_std::inject_globals(&lua).expect("Failed to inject globals");
+            lune_std::inject_globals(&lua, GlobalsContextBuilder::default())
+                .expect("Failed to inject globals");
         }
 
         Self {

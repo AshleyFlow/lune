@@ -1,7 +1,10 @@
 #![allow(clippy::cargo_common_metadata)]
 
+use context::GlobalsContextBuilder;
+use library::inject_lune_standard_libraries;
 use mlua::prelude::*;
 
+pub mod context;
 mod global;
 mod globals;
 mod library;
@@ -9,7 +12,6 @@ mod luaurc;
 
 pub use self::global::LuneStandardGlobal;
 pub use self::globals::version::set_global_version;
-pub use self::library::LuneStandardLibrary;
 
 /**
     Injects all standard globals into the given Lua state / VM.
@@ -21,9 +23,13 @@ pub use self::library::LuneStandardLibrary;
 
     Errors when out of memory, or if *default* Lua globals are missing.
 */
-pub fn inject_globals(lua: &Lua) -> LuaResult<()> {
+pub fn inject_globals(lua: &Lua, context_builder: GlobalsContextBuilder) -> LuaResult<()> {
+    let context = inject_lune_standard_libraries(context_builder)?.build();
+
     for global in LuneStandardGlobal::ALL {
-        lua.globals().set(global.name(), global.create(lua)?)?;
+        lua.globals()
+            .set(global.name(), global.create(lua, &context)?)?;
     }
+
     Ok(())
 }

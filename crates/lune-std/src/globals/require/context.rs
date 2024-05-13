@@ -250,7 +250,6 @@ impl RequireContext {
         module: impl AsRef<str>,
     ) -> LuaResult<LuaMultiValue<'lua>> {
         let lua_alias = self.global_context.get_alias(alias.as_ref()).unwrap();
-        let library = lua_alias.children.get(module.as_ref()).unwrap();
         let cache_name = alias.as_ref().to_owned() + module.as_ref();
 
         let mut cache = self
@@ -270,10 +269,15 @@ impl RequireContext {
             };
         };
 
-        let result: LuaValue = match library {
-            LuneModuleCreator::LuaTable(table_creator) => table_creator(lua)?.into_lua(lua)?,
-            LuneModuleCreator::LuaValue(value_creator) => value_creator(lua)?,
-        };
+        let library = lua_alias.children.get(module.as_ref()).unwrap_or_else(|| {
+            panic!(
+                "Library with the name of @{}/{} was not found",
+                alias.as_ref(),
+                module.as_ref()
+            )
+        });
+
+        let result = library.clone().into_lua(lua)?;
 
         cache.insert(cache_name, lua.create_registry_value(vec![result.clone()]));
 

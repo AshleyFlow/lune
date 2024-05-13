@@ -64,6 +64,15 @@ pub enum LuneModuleCreator {
     LuaValue(fn(&Lua) -> LuaResult<LuaValue>),
 }
 
+impl<'lua> IntoLua<'lua> for LuneModuleCreator {
+    fn into_lua(self, lua: &'lua Lua) -> LuaResult<LuaValue<'lua>> {
+        match self {
+            LuneModuleCreator::LuaTable(creator) => creator(lua)?.into_lua(lua),
+            LuneModuleCreator::LuaValue(creator) => creator(lua),
+        }
+    }
+}
+
 #[derive(Default, Clone, Debug)]
 pub struct LuneModule {
     pub children: HashMap<&'static str, LuneModuleCreator>,

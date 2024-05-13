@@ -23,8 +23,11 @@ pub use self::globals::version::set_global_version;
 
     Errors when out of memory, or if *default* Lua globals are missing.
 */
-pub fn inject_globals(lua: &Lua, context_builder: GlobalsContextBuilder) -> LuaResult<()> {
-    let context = inject_lune_standard_libraries(context_builder)?.build();
+pub fn inject_globals(lua: &Lua, mut context_builder: GlobalsContextBuilder) -> LuaResult<()> {
+    let context = {
+        inject_lune_standard_libraries(&mut context_builder)?;
+        context_builder.build()
+    };
 
     for global in LuneStandardGlobal::ALL {
         lua.globals()

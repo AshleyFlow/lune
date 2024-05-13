@@ -1,35 +1,85 @@
 use mlua::prelude::*;
 use std::collections::HashMap;
 
-pub type LuaModule = fn(&Lua) -> LuaResult<LuaTable>;
+/**
+    Will only insert the item into the hashmap if the provided feature flag is enabled
+
+    # Example
+
+    ```rs
+    context_builder.with_alias("lune", |modules| {
+        insert_feature_only_module!(modules, "fs", lune_std_fs::module);
+
+        /*
+                turns into:
+
+        #[cfg(feature = "fs")]
+        modules.insert("fs", lune_std_fs::module);
+
+        */
+
+        Ok(())
+    })?;
+    ```
+*/
+#[macro_export]
+macro_rules! insert_feature_only_module {
+    ($modules:ident, $feature:literal, $module:expr) => {
+        #[cfg(feature = $feature)]
+        $modules.insert($feature, $module);
+    };
+}
+
+/**
+    Will insert the item into the hashmap
+
+    # Example
+
+    ```rs
+    context_builder.with_alias("lune", |modules| {
+        insert_module!(modules, "fs", lune_std_fs::module);
+
+        /*
+                turns into:
+
+        modules.insert("fs", lune_std_fs::module);
+
+        */
+
+        Ok(())
+    })?;
+    ```
+*/
+#[macro_export]
+macro_rules! insert_module {
+    ($modules:ident, $feature:literal, $module:expr) => {
+        $modules.insert($feature, $module);
+    };
+}
+
+pub type LuneModuleCreator = fn(&Lua) -> LuaResult<LuaTable>;
 
 #[derive(Default, Clone, Debug)]
-pub struct LuaAlias {
-    pub children: HashMap<&'static str, LuaModule>,
+pub struct LuneModule {
+    pub children: HashMap<&'static str, LuneModuleCreator>,
     pub alias: &'static str,
 }
 
 #[derive(Default, Clone, Debug)]
 pub struct GlobalsContext {
-    pub(crate) aliases: Vec<LuaAlias>,
+    pub(crate) modules: Vec<LuneModule>,
 }
 
 impl GlobalsContext {
     #[must_use]
-    pub fn get_alias(&self, s: &str) -> Option<LuaAlias> {
-        for alias in &self.aliases {
-            if alias.alias == s {
-                return Some(alias.clone());
-            }
-        }
-
-        None
+    pub fn get_alias(&self, s: &str) -> Option<&LuneModule> {
+        self.modules.iter().find(|x| x.alias == s)
     }
 }
 
 #[derive(Default)]
 pub struct GlobalsContextBuilder {
-    aliases: Vec<LuaAlias>,
+    modules: Vec<LuneModule>,
 }
 
 impl GlobalsContextBuilder {
@@ -38,61 +88,51 @@ impl GlobalsContextBuilder {
         Self::default()
     }
 
-    #[must_use]
-    pub fn set_alias(mut self, name: &'static str) -> Self {
-        let alias = LuaAlias {
-            alias: name,
-            ..Default::default()
+    /**
+        # Errors
+
+        Errors if the handler errors
+
+        # Example
+
+        ```rs
+        let create_pixels = |lua: &Lua| -> LuaResult<LuaTable> {
+            ... // return a lua table
         };
-        self.aliases.push(alias);
 
-        self
-    }
+        builder.with_alias(|modules| {
+            // There are multiple ways of inserting a module
 
-    /**
-        # Panics
+            // .1
+            modules.insert("pixels", create_pixels);
 
-        Errors when it gets called before '`set_alias`'
+            // .2
+            // does the exact same thing as .1
+            insert_module!(modules, "pixels", create_pixels);
 
-        # Errors
+            // .3
+            // does the exact same thing as .1
+            // but only if a feature flag with the name of "pixels" is enabled
+            insert_feature_only_module!(modules, "pixels", create_pixels);
 
-        Errors when it gets called before '`set_alias`'
-
-        Errors when out of memory
+            Ok(())
+        })?;
+        ```
     */
-    pub fn set(mut self, key: &'static str, value: LuaModule) -> LuaResult<Self> {
-        if self.aliases.is_empty() {
-            return  Err(LuaError::RuntimeError(
-                "Tried to set value before setting an alias, use 'set_alias' before calling 'set_value'"
-            .into()));
-        }
+    pub fn with_alias(
+        &mut self,
+        name: &'static str,
+        handler: fn(&mut HashMap<&str, LuneModuleCreator>) -> LuaResult<()>,
+    ) -> LuaResult<()> {
+        let mut modules = HashMap::new();
+        handler(&mut modules)?;
 
-        let alias = self.aliases.last_mut().unwrap();
-        alias.children.insert(key, value);
+        let alias = LuneModule {
+            alias: name,
+            children: modules,
+        };
 
-        Ok(self)
-    }
-
-    /**
-        # Panics
-
-        Errors when it gets called before '`set_alias`'
-
-        # Errors
-
-        Errors when it gets called before '`set_alias`'
-
-        Errors when out of memory
-    */
-    pub fn borrow_set(&mut self, key: &'static str, value: LuaModule) -> LuaResult<()> {
-        if self.aliases.is_empty() {
-            return  Err(LuaError::RuntimeError(
-                "Tried to set value before setting an alias, use 'set_alias' before calling 'set_value'"
-            .into()));
-        }
-
-        let alias = self.aliases.last_mut().unwrap();
-        alias.children.insert(key, value);
+        self.modules.push(alias);
 
         Ok(())
     }
@@ -100,7 +140,7 @@ impl GlobalsContextBuilder {
     #[must_use]
     pub fn build(self) -> GlobalsContext {
         GlobalsContext {
-            aliases: self.aliases,
+            modules: self.modules,
         }
     }
 }

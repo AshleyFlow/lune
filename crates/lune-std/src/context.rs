@@ -5,16 +5,15 @@ use std::collections::HashMap;
     Will only insert the item into the hashmap if the provided feature flag is enabled
 
     # Example
-
-    ```rs
+    ```
     context_builder.with_alias("lune", |modules| {
-        insert_feature_only_module!(modules, "fs", lune_std_fs::module);
+        insert_feature_only_module!(modules, "fs", LuneModuleCreator::LuaTable(lune_std_fs::module));
 
         /*
                 turns into:
 
         #[cfg(feature = "fs")]
-        modules.insert("fs", lune_std_fs::module);
+        modules.insert("fs", LuneModuleCreator::LuaTable(lune_std_fs::module));
 
         */
 
@@ -34,15 +33,14 @@ macro_rules! insert_feature_only_module {
     Will insert the item into the hashmap
 
     # Example
-
-    ```rs
+    ```
     context_builder.with_alias("lune", |modules| {
-        insert_module!(modules, "fs", lune_std_fs::module);
+        insert_module!(modules, "fs", LuneModuleCreator::LuaTable(lune_std_fs::module));
 
         /*
                 turns into:
 
-        modules.insert("fs", lune_std_fs::module);
+        modules.insert("fs", LuneModuleCreator::LuaTable(lune_std_fs::module));
 
         */
 
@@ -57,7 +55,14 @@ macro_rules! insert_module {
     };
 }
 
-pub type LuneModuleCreator = fn(&Lua) -> LuaResult<LuaTable>;
+/**
+    Use this enum to determine what type of lua object a module will return
+*/
+#[derive(Clone, Debug)]
+pub enum LuneModuleCreator {
+    LuaTable(fn(&Lua) -> LuaResult<LuaTable>),
+    LuaValue(fn(&Lua) -> LuaResult<LuaValue>),
+}
 
 #[derive(Default, Clone, Debug)]
 pub struct LuneModule {
@@ -65,6 +70,11 @@ pub struct LuneModule {
     pub alias: &'static str,
 }
 
+/**
+    This struct provides customizable information to globals at [`LuneStandardGlobal`](../enum.LuneStandardGlobal.html)
+
+    To create one, use [`GlobalsContextBuilder`](struct.GlobalsContextBuilder.html)
+*/
 #[derive(Default, Clone, Debug)]
 pub struct GlobalsContext {
     pub(crate) modules: Vec<LuneModule>,
@@ -77,6 +87,26 @@ impl GlobalsContext {
     }
 }
 
+/**
+    # Example
+    ```
+    // our module creator
+    let create_pixels = |lua: &Lua| -> LuaResult<LuaTable> {
+        ... // return a lua table
+    };
+
+    let builder = lune_std::context::GlobalsContextBuilder::new();
+
+    // lua: require("@<alias-name>/pixels")
+    builder.with_alias("<alias-name>", |modules| {
+        insert_module!(modules, "pixels", LuneModuleCreator::LuaTable(create_pixels));
+
+        Ok(())
+    })?;
+
+    lune_std::inject_globals(&lua, builder);
+    ```
+*/
 #[derive(Default)]
 pub struct GlobalsContextBuilder {
     modules: Vec<LuneModule>,
@@ -94,26 +124,25 @@ impl GlobalsContextBuilder {
         Errors if the handler errors
 
         # Example
-
-        ```rs
+        ```
         let create_pixels = |lua: &Lua| -> LuaResult<LuaTable> {
             ... // return a lua table
         };
 
-        builder.with_alias(|modules| {
+        builder.with_alias("<alias>", |modules| {
             // There are multiple ways of inserting a module
 
             // .1
-            modules.insert("pixels", create_pixels);
+            modules.insert("pixels", LuneModuleCreator::LuaTable(create_pixels));
 
             // .2
             // does the exact same thing as .1
-            insert_module!(modules, "pixels", create_pixels);
+            insert_module!(modules, "pixels", LuneModuleCreator::LuaTable(create_pixels));
 
             // .3
             // does the exact same thing as .1
             // but only if a feature flag with the name of "pixels" is enabled
-            insert_feature_only_module!(modules, "pixels", create_pixels);
+            insert_feature_only_module!(modules, "pixels", LuneModuleCreator::LuaTable(create_pixels));
 
             Ok(())
         })?;

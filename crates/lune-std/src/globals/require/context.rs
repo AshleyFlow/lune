@@ -17,7 +17,7 @@ use tokio::{
 
 use lune_utils::path::{clean_path, clean_path_and_make_absolute};
 
-use crate::context::GlobalsContext;
+use crate::context::{GlobalsContext, LuneModuleCreator};
 
 /**
     Context containing cached results for all `require` operations.
@@ -270,7 +270,10 @@ impl RequireContext {
             };
         };
 
-        let result = library(lua)?.into_lua(lua)?;
+        let result: LuaValue = match library {
+            LuneModuleCreator::LuaTable(table_creator) => table_creator(lua)?.into_lua(lua)?,
+            LuneModuleCreator::LuaValue(value_creator) => value_creator(lua)?,
+        };
 
         cache.insert(cache_name, lua.create_registry_value(vec![result.clone()]));
 

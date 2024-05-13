@@ -17,7 +17,7 @@ use tokio::{
 
 use lune_utils::path::{clean_path, clean_path_and_make_absolute};
 
-use crate::context::{GlobalsContext, LuneModuleCreator};
+use crate::context::GlobalsContext;
 
 /**
     Context containing cached results for all `require` operations.

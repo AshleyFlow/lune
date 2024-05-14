@@ -35,22 +35,40 @@ impl Runtime {
         lua.set_app_data(Rc::downgrade(&lua));
         lua.set_app_data(Vec::<String>::new());
 
-        #[cfg(any(
-            feature = "std-datetime",
-            feature = "std-fs",
-            feature = "std-luau",
-            feature = "std-net",
-            feature = "std-process",
-            feature = "std-regex",
-            feature = "std-roblox",
-            feature = "std-serde",
-            feature = "std-stdio",
-            feature = "std-task",
-        ))]
-        {
-            lune_std::inject_globals(&lua, GlobalsContextBuilder::default())
-                .expect("Failed to inject globals");
-        }
+        let globals_ctx_builder = {
+            #[cfg(test)]
+            {
+                let mut globals_ctx_builder = GlobalsContextBuilder::new();
+
+                globals_ctx_builder
+                    .with_alias("test", |modules| {
+                        use lune_std::context::LuneModuleCreator;
+
+                        modules.insert(
+                            "number",
+                            LuneModuleCreator::LuaValue(|_lua| Ok(mlua::Value::Number(500.0))),
+                        );
+
+                        modules.insert(
+                            "table",
+                            LuneModuleCreator::LuaTable(mlua::Lua::create_table),
+                        );
+
+                        Ok(())
+                    })
+                    .unwrap();
+                // we know this wont panic, because inside the handler we don't have any errors
+
+                globals_ctx_builder
+            }
+
+            #[cfg(not(test))]
+            {
+                GlobalsContextBuilder::default()
+            }
+        };
+
+        lune_std::inject_globals(&lua, globals_ctx_builder).expect("Failed to inject globals");
 
         Self {
             lua,

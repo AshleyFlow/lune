@@ -48,6 +48,10 @@ macro_rules! create_tests {
     )* }
 }
 
+create_tests! {
+    require_custom_aliases: "require/tests/custom_aliases",
+}
+
 #[cfg(any(
     feature = "std-datetime",
     feature = "std-fs",

@@ -1,6 +1,13 @@
 <!-- markdownlint-disable MD033 -->
 <!-- markdownlint-disable MD041 -->
 
+# Deprecated
+
+> [!IMPORTANT]
+> Since the newer versions of lune allows their standard libraries to be used individually as cargo crates, forking lune is no longer necessary
+> So we have deperecated this forked repo in favor of [LuneWeb-template](https://github.com/LuneWeb/LuneWeb-template)
+
+---
 <img align="right" width="250" src="assets/logo/tilt_svg.svg" alt="Lune logo" />
 
 <h1 align="center">Lune Web</h1>

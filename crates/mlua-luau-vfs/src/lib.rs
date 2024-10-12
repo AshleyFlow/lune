@@ -7,7 +7,7 @@ mod utils;
 
 #[derive(Debug, Default)]
 pub struct VirtualFileSystem {
-    files: HashMap<PathBuf, &'static [u8]>,
+    pub(crate) files: HashMap<PathBuf, &'static [u8]>,
 }
 
 impl VirtualFileSystem {
@@ -20,6 +20,14 @@ impl VirtualFileSystem {
      */
     pub fn get(lua: &mlua::Lua) -> Option<mlua::AppDataRefMut<'_, Self>> {
         lua.app_data_mut()
+    }
+
+    pub fn read<T>(&mut self, path: T) -> Option<Vec<u8>>
+    where
+        T: AsRef<Path>,
+    {
+        let normalized_path = utils::normalize_path(path);
+        self.files.get(&normalized_path).map(|x| x.to_vec())
     }
 
     pub fn write<T>(&mut self, path: T, contents: &'static [u8])

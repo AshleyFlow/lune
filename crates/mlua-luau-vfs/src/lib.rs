@@ -3,6 +3,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
+#[cfg(test)]
+mod test;
+
 mod utils;
 
 #[derive(Debug, Default)]

@@ -1838,6 +1838,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "mlua-luau-vfs"
+version = "0.0.1"
+dependencies = [
+ "mlua",
+]
+
+[[package]]
 name = "mlua-sys"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

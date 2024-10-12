@@ -1,9 +1,49 @@
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
+
+mod utils;
+
 #[derive(Debug, Default)]
-pub struct VirtualFileSystem {}
+pub struct VirtualFileSystem {
+    files: HashMap<PathBuf, &'static [u8]>,
+}
 
 impl VirtualFileSystem {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /**
+    Get the attached struct from lua VM
+     */
+    pub fn get(lua: &mlua::Lua) -> Option<mlua::AppDataRefMut<'_, Self>> {
+        lua.app_data_mut()
+    }
+
+    pub fn write<T>(&mut self, path: T, contents: &'static [u8])
+    where
+        T: AsRef<Path>,
+    {
+        let normalized_path = utils::normalize_path(path);
+        self.files.insert(normalized_path, contents);
+    }
+
+    pub fn remove<T>(&mut self, path: T)
+    where
+        T: AsRef<Path>,
+    {
+        let normalized_path = utils::normalize_path(path);
+        self.files.remove(&normalized_path);
+    }
+
+    pub fn exists<T>(&self, path: T) -> bool
+    where
+        T: AsRef<Path>,
+    {
+        let normalized_path = utils::normalize_path(path);
+        self.files.contains_key(normalized_path.as_path())
     }
 
     /**

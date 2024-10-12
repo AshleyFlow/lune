@@ -23,3 +23,17 @@ fn file_exists_after_write() {
         Some(contents.to_vec())
     );
 }
+
+#[test]
+fn remove_file() {
+    let mut vfs = VirtualFileSystem::new();
+    let contents = &[1, 2, 3, 4];
+
+    vfs.write(PathBuf::from("./data/file"), contents);
+
+    assert!(vfs.exists(PathBuf::from("./data/file")));
+
+    vfs.remove(PathBuf::from("./data/../data/file"));
+
+    assert!(!vfs.exists(PathBuf::from("./data/file")));
+}

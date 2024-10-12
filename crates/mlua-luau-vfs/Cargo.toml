@@ -1,0 +1,13 @@
+[package]
+name = "mlua-luau-vfs"
+version = "0.0.1"
+edition = "2021"
+license = "MPL-2.0"
+repository = "https://github.com/lune-org/lune"
+readme = "README.md"
+keywords = ["async", "luau"]
+categories = ["async"]
+
+[dependencies]
+mlua = { version = "0.9.9", features = ["luau", "luau-jit", "async"] }
+# tokio = { version = "1", default-features = false, features = ["fs"] }
